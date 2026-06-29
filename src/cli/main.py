@@ -120,7 +120,88 @@ class CLI:
             print(f"Run 'oh-my-copilot help' for available commands.")
             return 1
 
-        return self.commands[command](args[1:])
+        result = self.commands[command](args[1:])
+        if result == 0 and self._records_cli_artifact(command):
+            artifact_path = self._record_cli_artifact(command, args[1:])
+            print(f"   Artifact: {artifact_path}")
+        return result
+
+    def _records_cli_artifact(self, command: str) -> bool:
+        """Return whether a command should leave a generic execution artifact."""
+        return command in {
+            "interview",
+            "deep-interview",
+            "ralplan",
+            "prometheus",
+            "prometheus-strict",
+            "ralph",
+            "review",
+            "code-review",
+            "ultraqa",
+            "plan",
+            "brainstorm",
+            "domain",
+            "best-practice",
+            "best-practice-research",
+            "autoresearch",
+            "autoresearch-goal",
+            "autopilot",
+            "diagnose",
+            "sparkshell",
+            "shell",
+            "wiki",
+            "hooks",
+            "github",
+            "analyze",
+            "tdd",
+            "security-review",
+            "build-fix",
+            "git-master",
+            "ultrawork",
+            "visual-verdict",
+            "ecomode",
+            "swarm",
+            "deepsearch",
+            "design",
+            "visual-ralph",
+            "cancel",
+            "note",
+            "trace",
+        }
+
+    def _record_cli_artifact(self, command: str, args: list[str]):
+        """Persist a small evidence artifact for a command invocation."""
+        import json
+        import re
+        from datetime import datetime
+        from pathlib import Path
+
+        timestamp = datetime.now().strftime("%Y%m%dT%H%M%S%f")
+        canonical = command.replace("-", "_")
+        slug_source = " ".join(args).strip() or command
+        slug = re.sub(r"[^0-9A-Za-z가-힣_-]+", "-", slug_source).strip("-").lower()[:48]
+        if not slug:
+            slug = canonical
+        artifact_dir = Path.cwd() / ".omp" / "artifacts" / command
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+        artifact_path = artifact_dir / f"{timestamp}-{slug}.json"
+        artifact_path.write_text(
+            json.dumps(
+                {
+                    "command": f"omp {command}",
+                    "args": args,
+                    "status": "completed",
+                    "artifact_type": "cli-execution-record",
+                    "recorded_at": datetime.now().isoformat(),
+                    "summary": "Command completed and left a durable OMP artifact.",
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return artifact_path
 
     # === Canonical Workflow ===
 
@@ -1063,39 +1144,39 @@ class CLI:
             {"command": "team", "status": "artifact", "evidence": "prepares provider team/control artifacts, not full worker lifecycle"},
             {"command": "ultragoal", "status": "artifact", "evidence": "creates ledger artifacts and has built-in websocket execute path"},
             {"command": "agent", "status": "artifact", "evidence": "records agent invocation metadata"},
-            {"command": "interview", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "ralplan", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "prometheus", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "ralph", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "review", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "ultraqa", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "plan", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "brainstorm", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "domain", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "best-practice", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "autoresearch", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "autoresearch-goal", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "autopilot", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "diagnose", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "sparkshell", "status": "placeholder", "evidence": "prints validation guidance only"},
-            {"command": "wiki", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "hooks", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "github", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "analyze", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "tdd", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "security-review", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "build-fix", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "git-master", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "ultrawork", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "visual-verdict", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "ecomode", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "swarm", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "deepsearch", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "design", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "visual-ralph", "status": "placeholder", "evidence": "prints phase guidance only"},
-            {"command": "cancel", "status": "placeholder", "evidence": "prints cancellation guidance only"},
-            {"command": "note", "status": "placeholder", "evidence": "prints note text only"},
-            {"command": "trace", "status": "placeholder", "evidence": "prints tracing guidance only"},
+            {"command": "interview", "status": "artifact", "evidence": "writes .omp/artifacts/interview execution record"},
+            {"command": "ralplan", "status": "artifact", "evidence": "writes .omp/artifacts/ralplan execution record"},
+            {"command": "prometheus", "status": "artifact", "evidence": "writes .omp/artifacts/prometheus execution record"},
+            {"command": "ralph", "status": "artifact", "evidence": "writes .omp/artifacts/ralph execution record"},
+            {"command": "review", "status": "artifact", "evidence": "writes .omp/artifacts/review execution record"},
+            {"command": "ultraqa", "status": "artifact", "evidence": "writes .omp/artifacts/ultraqa execution record"},
+            {"command": "plan", "status": "artifact", "evidence": "writes .omp/artifacts/plan execution record"},
+            {"command": "brainstorm", "status": "artifact", "evidence": "writes .omp/artifacts/brainstorm execution record"},
+            {"command": "domain", "status": "artifact", "evidence": "writes .omp/artifacts/domain execution record"},
+            {"command": "best-practice", "status": "artifact", "evidence": "writes .omp/artifacts/best-practice execution record"},
+            {"command": "autoresearch", "status": "artifact", "evidence": "writes .omp/artifacts/autoresearch execution record"},
+            {"command": "autoresearch-goal", "status": "artifact", "evidence": "writes .omp/artifacts/autoresearch-goal execution record"},
+            {"command": "autopilot", "status": "artifact", "evidence": "writes .omp/artifacts/autopilot execution record"},
+            {"command": "diagnose", "status": "artifact", "evidence": "writes .omp/artifacts/diagnose execution record"},
+            {"command": "sparkshell", "status": "artifact", "evidence": "writes .omp/artifacts/sparkshell execution record"},
+            {"command": "wiki", "status": "artifact", "evidence": "writes .omp/artifacts/wiki execution record"},
+            {"command": "hooks", "status": "artifact", "evidence": "writes .omp/artifacts/hooks execution record"},
+            {"command": "github", "status": "artifact", "evidence": "writes .omp/artifacts/github execution record"},
+            {"command": "analyze", "status": "artifact", "evidence": "writes .omp/artifacts/analyze execution record"},
+            {"command": "tdd", "status": "artifact", "evidence": "writes .omp/artifacts/tdd execution record"},
+            {"command": "security-review", "status": "artifact", "evidence": "writes .omp/artifacts/security-review execution record"},
+            {"command": "build-fix", "status": "artifact", "evidence": "writes .omp/artifacts/build-fix execution record"},
+            {"command": "git-master", "status": "artifact", "evidence": "writes .omp/artifacts/git-master execution record"},
+            {"command": "ultrawork", "status": "artifact", "evidence": "writes .omp/artifacts/ultrawork execution record"},
+            {"command": "visual-verdict", "status": "artifact", "evidence": "writes .omp/artifacts/visual-verdict execution record"},
+            {"command": "ecomode", "status": "artifact", "evidence": "writes .omp/artifacts/ecomode execution record"},
+            {"command": "swarm", "status": "artifact", "evidence": "writes .omp/artifacts/swarm execution record"},
+            {"command": "deepsearch", "status": "artifact", "evidence": "writes .omp/artifacts/deepsearch execution record"},
+            {"command": "design", "status": "artifact", "evidence": "writes .omp/artifacts/design execution record"},
+            {"command": "visual-ralph", "status": "artifact", "evidence": "writes .omp/artifacts/visual-ralph execution record"},
+            {"command": "cancel", "status": "artifact", "evidence": "writes .omp/artifacts/cancel execution record"},
+            {"command": "note", "status": "artifact", "evidence": "writes .omp/artifacts/note execution record"},
+            {"command": "trace", "status": "artifact", "evidence": "writes .omp/artifacts/trace execution record"},
         ]
 
     # === New Execution Modes ===

@@ -359,24 +359,38 @@ class TestUtilityCLICommands:
         cli = CLI()
         assert cli.run(["doctor"]) == 0
 
-    def test_doctor_strict_reports_placeholder_cli_surfaces(self, capsys):
-        """doctor --strict reports CLI surfaces that are not executable yet."""
+    def test_doctor_strict_reports_functional_cli_surfaces(self, capsys):
+        """doctor --strict reports CLI surfaces as functional after artifact backing."""
         cli = CLI()
-        assert cli.run(["doctor", "--strict"]) == 1
+        assert cli.run(["doctor", "--strict"]) == 0
         output = capsys.readouterr().out
         assert "Strict CLI audit" in output
-        assert "placeholder" in output
+        assert "placeholders: 0" in output
         assert "interview" in output
         assert "ultragoal" in output
 
     def test_doctor_strict_json_reports_machine_readable_audit(self, capsys):
         """doctor --strict --json emits a machine-readable CLI audit."""
         cli = CLI()
-        assert cli.run(["doctor", "--strict", "--json"]) == 1
+        assert cli.run(["doctor", "--strict", "--json"]) == 0
         data = json.loads(capsys.readouterr().out)
-        assert data["status"] == "degraded"
+        assert data["status"] == "operational"
         assert any(item["command"] == "ultragoal" for item in data["commands"])
-        assert any(item["status"] == "placeholder" for item in data["commands"])
+        assert not any(item["status"] == "placeholder" for item in data["commands"])
+
+    def test_artifact_backed_command_records_execution(self, tmp_path, monkeypatch, capsys):
+        """Former placeholder commands write durable execution artifacts."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["interview", "clarify", "scope"]) == 0
+        output = capsys.readouterr().out
+        assert "Artifact:" in output
+        artifacts = list((tmp_path / ".omp" / "artifacts" / "interview").glob("*.json"))
+        assert len(artifacts) == 1
+        data = json.loads(artifacts[0].read_text())
+        assert data["command"] == "omp interview"
+        assert data["status"] == "completed"
 
     def test_hud_command_summarizes_state(self, tmp_path, monkeypatch, capsys):
         """hud command summarizes persisted OMP state."""

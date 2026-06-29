@@ -37,7 +37,7 @@ omp skills
 # 헬스체크 (전체 34개 스킬 확인)
 omp doctor
 
-# 실제 CLI 동작 깊이 점검 (placeholder surface가 있으면 exit 1)
+# 실제 CLI 동작 깊이 점검
 omp doctor --strict
 omp doctor --strict --json
 
@@ -152,8 +152,9 @@ omp tdd "refresh token 기능"
 
 `omp doctor`는 스킬 import와 등록 상태를 확인하는 기본 health check입니다. 실제로 명령이 파일,
 state, artifact, 외부 provider 실행까지 수행하는지 확인하려면 `omp doctor --strict`를 사용합니다.
-`placeholder`로 표시되는 명령은 현재 단계 안내만 출력하며 아직 구현 작업, 상태 저장, 또는 artifact 생성을
-수행하지 않습니다.
+현재 CLI surface는 strict audit 기준으로 모두 `executable`, `state`, `artifact`, 또는 `external`로
+분류됩니다. workflow형 명령은 최소한 `.omp/artifacts/<command>/`에 실행 record를 남기므로 smoke와
+후속 검증에서 확인할 수 있습니다.
 
 ### 방법 2: Python 코드에서 직접 사용
 
