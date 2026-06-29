@@ -1,5 +1,7 @@
 """Tests for session friction reporting skill."""
 
+import json
+
 from skills import SessionFrictionSkill
 from domain import FrictionSignalType
 
@@ -28,3 +30,18 @@ class TestSessionFrictionBasics:
 
         assert report.total_signals == 1
         assert report.signal_breakdown["context-bloat"] == 1
+
+    def test_skill_can_collect_signals_from_session_files(self, tmp_path):
+        """Session friction report reads sanitized signals from local session files."""
+        (tmp_path / "session-1.json").write_text(json.dumps({
+            "friction_signals": [
+                {"type": "context-bloat", "summary": "large context summary"},
+                {"type": "tool-retry", "summary": "retried command"},
+            ]
+        }))
+
+        report = SessionFrictionSkill().generate_report_from_files("24h", tmp_path)
+
+        assert report.total_signals == 2
+        assert report.signal_breakdown["context-bloat"] == 1
+        assert report.signal_breakdown["tool-retry"] == 1

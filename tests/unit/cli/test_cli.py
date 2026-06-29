@@ -332,6 +332,23 @@ class TestUtilityCLICommands:
         output = capsys.readouterr().out
         assert "Artifact:" in output
 
+    def test_ask_execute_records_sanitized_session(self, tmp_path, monkeypatch):
+        """ask --execute records sanitized session metadata."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["ask", "--execute", "codex", "review", "this", "secret", "patch"]) == 0
+
+        session_files = list((tmp_path / ".omp" / "sessions").glob("*.json"))
+        assert len(session_files) == 1
+        data = json.loads(session_files[0].read_text())
+        assert data["command"] == "omp ask --execute codex"
+        assert data["status"] == "blocked"
+        assert data["friction_signals"] == [
+            {"type": "operator-friction", "summary": "provider executable missing"}
+        ]
+        assert "secret patch" not in session_files[0].read_text()
+
     def test_wait_command(self, capsys):
         """wait command checks rate-limit wait state."""
         cli = CLI()
@@ -375,6 +392,23 @@ class TestUtilityCLICommands:
         """session friction report command summarizes local friction."""
         cli = CLI()
         assert cli.run(["session", "friction", "report", "--since", "24h"]) == 0
+
+    def test_session_friction_report_reads_session_files(self, tmp_path, monkeypatch, capsys):
+        """session friction report reads local OMP session signal files."""
+        sessions_root = tmp_path / ".omp" / "sessions"
+        sessions_root.mkdir(parents=True)
+        (sessions_root / "session-1.json").write_text(json.dumps({
+            "friction_signals": [
+                {"type": "context-bloat", "summary": "large context summary"}
+            ]
+        }))
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["session", "friction", "report", "--since", "24h"]) == 0
+        output = capsys.readouterr().out
+        assert "Signals: 1" in output
+        assert "context-bloat" in output
 
     def test_config_stop_callback_command(self, capsys):
         """config-stop-callback prepares notification configuration."""

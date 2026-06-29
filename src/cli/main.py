@@ -509,11 +509,28 @@ class CLI:
         if len(args) >= 3 and args[0] == "--execute":
             try:
                 from pathlib import Path
+                from core import SessionRecorder
                 from skills import ProviderAdvisorSkill
 
                 skill = ProviderAdvisorSkill()
-                result = skill.execute(args[1], " ".join(args[2:]))
+                provider = args[1]
+                result = skill.execute(provider, " ".join(args[2:]))
                 artifact = skill.record_artifact(result, Path.cwd() / ".omp" / "artifacts" / "ask")
+                friction_type = ""
+                friction_summary = ""
+                if result.status.value == "blocked":
+                    friction_type = "operator-friction"
+                    friction_summary = "provider executable missing"
+                elif result.status.value == "failed":
+                    friction_type = "validation-failure"
+                    friction_summary = "provider execution failed"
+                SessionRecorder(Path.cwd() / ".omp" / "sessions").record_command(
+                    command=f"omp ask --execute {provider}",
+                    status=result.status.value,
+                    exit_code=result.exit_code,
+                    friction_type=friction_type,
+                    friction_summary=friction_summary,
+                )
             except ValueError as error:
                 print(f"Error: {error}")
                 return 1
@@ -596,8 +613,12 @@ class CLI:
             return 1
 
         from skills import SessionFrictionSkill
+        from pathlib import Path
 
-        report = SessionFrictionSkill().generate_report(since)
+        report = SessionFrictionSkill().generate_report_from_files(
+            since,
+            Path.cwd() / ".omp" / "sessions",
+        )
         if output_format == "--json":
             print(
                 '{'
@@ -608,6 +629,10 @@ class CLI:
         else:
             print(f"📉 Session Friction: since {report.since}")
             print(f"   Signals: {report.total_signals}")
+            print(
+                "   Breakdown: "
+                + (", ".join(f"{key}={value}" for key, value in report.signal_breakdown.items()) or "none")
+            )
             print(f"   Summary: {report.summary}")
         return 0
 

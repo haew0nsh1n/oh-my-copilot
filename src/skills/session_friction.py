@@ -1,5 +1,8 @@
 """Session friction reporting skill."""
 
+import json
+from pathlib import Path
+
 from domain import (
     FrictionSignal,
     FrictionSignalType,
@@ -32,6 +35,24 @@ class SessionFrictionSkill:
     def generate_report(self, since: str) -> SessionFrictionReport:
         """Generate an empty local session friction report for a time window."""
         return self.generate_report_from_session(self.create_session(since))
+
+    def generate_report_from_files(
+        self,
+        since: str,
+        sessions_root: Path | str,
+    ) -> SessionFrictionReport:
+        """Generate a report from sanitized local session signal files."""
+        session = self.create_session(since)
+        root = Path(sessions_root)
+        for path in sorted(root.glob("*.json")) if root.exists() else []:
+            data = json.loads(path.read_text())
+            for item in data.get("friction_signals", []):
+                self.add_signal(
+                    session,
+                    FrictionSignalType(item["type"]),
+                    item["summary"],
+                )
+        return self.generate_report_from_session(session)
 
     def generate_report_from_session(
         self,
