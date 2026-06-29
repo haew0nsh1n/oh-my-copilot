@@ -510,6 +510,41 @@ class TestUtilityCLICommands:
         assert cli.run(["doctor", "team-routing", "--json"]) == 0
         assert cli.run(["doctor", "conflicts", "--json"]) == 0
 
+    def test_internal_utility_skills_smoke(self, tmp_path):
+        """Internal utility skills used by CLI surfaces operate together."""
+        from skills import (
+            AgentCatalogSkill,
+            NotificationConfigSkill,
+            ProjectSetupSkill,
+            ProviderAdvisorSkill,
+            RateLimitWaitSkill,
+            SessionFrictionSkill,
+            StateSummarySkill,
+        )
+
+        assert AgentCatalogSkill().invoke("explore", "map").success
+        assert ProviderAdvisorSkill().ask("codex", "review").provider.value == "codex"
+
+        wait_skill = RateLimitWaitSkill()
+        wait = wait_skill.start_auto_resume()
+        wait_skill.save_state(wait, tmp_path / ".omp" / "state")
+        assert wait_skill.load_state(tmp_path / ".omp" / "state").action.value == "start"
+
+        report = SessionFrictionSkill().generate_report_from_files(
+            "24h",
+            tmp_path / ".omp" / "sessions",
+        )
+        assert report.total_signals == 0
+
+        config_skill = NotificationConfigSkill()
+        config = config_skill.prepare_stop_callback("file", {"path": str(tmp_path / "stop.md")})
+        config_skill.save_config(config, tmp_path / ".omp" / "state")
+        assert config.channel.value == "file"
+
+        setup = ProjectSetupSkill().initialize(tmp_path)
+        assert setup.state_root == tmp_path / ".omp"
+        assert StateSummarySkill().summarize(tmp_path / ".omp" / "state").total_files >= 1
+
     def test_ask_command(self):
         """ask command prepares a provider advisor request."""
         cli = CLI()
