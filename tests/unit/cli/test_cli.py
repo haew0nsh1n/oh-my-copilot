@@ -117,10 +117,72 @@ class TestCanonicalWorkflowCommands:
         cli = CLI()
         assert cli.run(["prometheus-strict", "auth plan"]) == 0
 
-    def test_ultragoal_command(self):
+    def test_ultragoal_command(self, tmp_path, monkeypatch):
         """ultragoal command works."""
+        monkeypatch.chdir(tmp_path)
+
         cli = CLI()
         assert cli.run(["ultragoal", "carry the approved plan"]) == 0
+
+    def test_ultragoal_command_writes_default_artifacts(self, tmp_path, monkeypatch, capsys):
+        """ultragoal command creates durable goal artifacts."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["ultragoal", "웹소켓", "클라이언트", "생성"]) == 0
+
+        output = capsys.readouterr().out
+        assert "Artifact:" in output
+        assert (tmp_path / ".omp" / "ultragoal" / "brief.md").exists()
+        assert (tmp_path / ".omp" / "ultragoal" / "goals.json").exists()
+        assert (tmp_path / ".omp" / "ultragoal" / "ledger.jsonl").exists()
+
+        goals = json.loads((tmp_path / ".omp" / "ultragoal" / "goals.json").read_text())
+        assert goals["name"] == "웹소켓 클라이언트 생성"
+        assert len(goals["goals"]) == 3
+
+    def test_ultragoal_create_goals_auto_plan_writes_plan_artifacts(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """ultragoal create-goals --auto-plan-id creates a plan-scoped ledger."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run([
+            "ultragoal",
+            "create-goals",
+            "--auto-plan-id",
+            "--brief",
+            "웹소켓 클라이언트 생성",
+        ]) == 0
+
+        output = capsys.readouterr().out
+        assert "Plan ID:" in output
+        plan_dirs = list((tmp_path / ".omp" / "ultragoal" / "plans").iterdir())
+        assert len(plan_dirs) == 1
+        assert (plan_dirs[0] / "brief.md").exists()
+        assert (plan_dirs[0] / "goals.json").exists()
+        assert (plan_dirs[0] / "ledger.jsonl").exists()
+
+    def test_ultragoal_execute_materializes_websocket_client(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """ultragoal execute connects the ledger to a built-in implementation step."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["ultragoal", "웹소켓", "클라이언트", "생성"]) == 0
+        assert cli.run(["ultragoal", "execute"]) == 0
+
+        output = capsys.readouterr().out
+        assert "Implemented:" in output
+        assert (tmp_path / "src" / "core" / "websocket_client.py").exists()
+        assert (tmp_path / "tests" / "unit" / "core" / "test_websocket_client.py").exists()
+
+        goals = json.loads((tmp_path / ".omp" / "ultragoal" / "goals.json").read_text())
+        execute_goal = [goal for goal in goals["goals"] if goal["title"] == "Execute implementation work"][0]
+        assert execute_goal["status"] == "completed"
+        assert "src/core/websocket_client.py" in (tmp_path / ".omp" / "ultragoal" / "ledger.jsonl").read_text()
 
     def test_team_command(self):
         """team command works."""
@@ -297,6 +359,25 @@ class TestUtilityCLICommands:
         cli = CLI()
         assert cli.run(["doctor"]) == 0
 
+    def test_doctor_strict_reports_placeholder_cli_surfaces(self, capsys):
+        """doctor --strict reports CLI surfaces that are not executable yet."""
+        cli = CLI()
+        assert cli.run(["doctor", "--strict"]) == 1
+        output = capsys.readouterr().out
+        assert "Strict CLI audit" in output
+        assert "placeholder" in output
+        assert "interview" in output
+        assert "ultragoal" in output
+
+    def test_doctor_strict_json_reports_machine_readable_audit(self, capsys):
+        """doctor --strict --json emits a machine-readable CLI audit."""
+        cli = CLI()
+        assert cli.run(["doctor", "--strict", "--json"]) == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["status"] == "degraded"
+        assert any(item["command"] == "ultragoal" for item in data["commands"])
+        assert any(item["status"] == "placeholder" for item in data["commands"])
+
     def test_hud_command_summarizes_state(self, tmp_path, monkeypatch, capsys):
         """hud command summarizes persisted OMP state."""
         state_root = tmp_path / ".omp" / "state"
@@ -309,6 +390,7 @@ class TestUtilityCLICommands:
         output = capsys.readouterr().out
         assert "Wait state: start" in output
         assert "State files: 1" in output
+        assert "Agent catalog: 32 agents" in output
 
     def test_setup_command(self):
         """setup command works as the public OMP setup entry point."""

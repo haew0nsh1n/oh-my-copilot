@@ -21,6 +21,7 @@ class ProjectSetupSkill:
             state_root / "sessions",
             state_root / "state",
             state_root / "skills",
+            state_root / "ultragoal",
         ]
         for path in paths:
             path.mkdir(parents=True, exist_ok=True)

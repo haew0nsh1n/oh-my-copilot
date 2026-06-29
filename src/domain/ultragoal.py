@@ -1,6 +1,7 @@
 """Domain model for ultragoal execution."""
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List
 from enum import Enum
 from datetime import datetime
@@ -167,3 +168,14 @@ class UltragoalReport:
         """Validate report."""
         if self.completion_percentage < 0 or self.completion_percentage > 100:
             raise ValueError("Completion percentage must be 0-100")
+
+
+@dataclass(frozen=True)
+class UltragoalArtifact:
+    """Durable artifact paths for an artifact-only ultragoal ledger."""
+
+    root: Path
+    brief_path: Path
+    goals_path: Path
+    ledger_path: Path
+    plan_id: str = ""

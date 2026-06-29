@@ -174,17 +174,186 @@ class CLI:
     def _ultragoal_command(self, args: list[str]) -> int:
         """$ultragoal — durable multi-goal execution with checkpoints."""
         if not args:
-            print("Usage: oh-my-copilot ultragoal <task-description>")
-            print("       Execute approved plan as durable multi-goal workload.")
+            print("Usage: omp ultragoal <task-description>")
+            print("       omp ultragoal create-goals [--auto-plan-id|--plan-id <id>] --brief <brief>")
+            print("       omp ultragoal execute [--plan-id <id>]")
+            print("       omp ultragoal status [--plan-id <id>]")
+            print("       omp ultragoal list-plans")
+            print("       Create artifact-only durable goal ledgers under .omp/ultragoal/.")
             return 1
-        task = " ".join(args)
-        print(f"🎯 Ultragoal: {task}")
-        print("   Phase: Durable execution")
-        print("   → Create goals with acceptance criteria")
-        print("   → Add checkpoints per goal")
-        print("   → Track progress with status updates")
-        print("   → Generate completion report")
-        print("   Optional: team (for parallel lanes)")
+
+        if args[0] == "create-goals":
+            return self._ultragoal_create_goals(args[1:])
+
+        if args[0] == "status":
+            return self._ultragoal_status(args[1:])
+
+        if args[0] == "execute":
+            return self._ultragoal_execute(args[1:])
+
+        if args[0] == "list-plans":
+            return self._ultragoal_list_plans()
+
+        return self._ultragoal_create_goals(args)
+
+    def _ultragoal_create_goals(self, args: list[str]) -> int:
+        """Create an artifact-only ultragoal ledger."""
+        from pathlib import Path
+
+        from skills import UltragoalSkill
+
+        plan_id = ""
+        auto_plan_id = False
+        brief_parts: list[str] = []
+        index = 0
+        while index < len(args):
+            arg = args[index]
+            if arg == "--auto-plan-id":
+                auto_plan_id = True
+                index += 1
+            elif arg == "--plan-id":
+                if index + 1 >= len(args):
+                    print("Error: --plan-id requires a value")
+                    return 1
+                plan_id = args[index + 1]
+                index += 2
+            elif arg == "--brief":
+                index += 1
+                while index < len(args) and not args[index].startswith("--"):
+                    brief_parts.append(args[index])
+                    index += 1
+            else:
+                brief_parts.append(arg)
+                index += 1
+
+        brief = " ".join(brief_parts).strip()
+        if not brief:
+            print("Usage: omp ultragoal create-goals [--auto-plan-id|--plan-id <id>] --brief <brief>")
+            return 1
+
+        skill = UltragoalSkill()
+        if auto_plan_id and not plan_id:
+            plan_id = skill.auto_plan_id(brief)
+
+        ultragoal = skill.create_artifact_only_ultragoal(
+            brief,
+            metadata={
+                "runtime": "omp",
+                "mode": "artifact-only",
+                "parity": "omc ultragoal create-goals",
+            },
+        )
+        artifact = skill.save_artifacts(ultragoal, Path.cwd() / ".omp", plan_id=plan_id)
+
+        print(f"🎯 Ultragoal: {brief}")
+        print("   Mode: artifact-only")
+        print("   Status: created")
+        if artifact.plan_id:
+            print(f"   Plan ID: {artifact.plan_id}")
+        print(f"   Artifact: {artifact.root}")
+        print(f"   Brief: {artifact.brief_path}")
+        print(f"   Goals: {artifact.goals_path}")
+        print(f"   Ledger: {artifact.ledger_path}")
+        print("   Next: attach implementation evidence or hand off to ralph/team/ultraqa")
+        return 0
+
+    def _ultragoal_execute(self, args: list[str]) -> int:
+        """Execute the next built-in implementation step for an ultragoal ledger."""
+        import json
+        from pathlib import Path
+
+        from domain import GoalStatus
+        from skills import UltragoalSkill
+
+        plan_id = ""
+        if args:
+            if len(args) == 2 and args[0] == "--plan-id":
+                plan_id = args[1]
+            else:
+                print("Usage: omp ultragoal execute [--plan-id <id>]")
+                return 1
+
+        project_root = Path.cwd()
+        artifact_root = project_root / ".omp" / "ultragoal"
+        if plan_id:
+            artifact_root = artifact_root / "plans" / plan_id
+        goals_path = artifact_root / "goals.json"
+        if not goals_path.exists():
+            print("No ultragoal artifacts found.")
+            print("Run: omp ultragoal create-goals --brief <brief>")
+            return 1
+
+        data = json.loads(goals_path.read_text(encoding="utf-8"))
+        skill = UltragoalSkill()
+        try:
+            paths = skill.materialize_builtin_implementation(data.get("name", ""), project_root)
+            relative_paths = [path.relative_to(project_root) for path in paths]
+            skill.record_goal_status(
+                artifact_root,
+                "Execute implementation work",
+                GoalStatus.COMPLETED,
+                evidence_paths=relative_paths,
+            )
+        except ValueError as error:
+            print(f"Blocked: {error}")
+            print("Next: hand off this ultragoal to ralph/team/ask for implementation.")
+            return 1
+
+        print(f"🎯 Ultragoal: {data.get('name', 'unknown')}")
+        print("   Mode: built-in execution")
+        print("   Status: implementation complete")
+        if plan_id:
+            print(f"   Plan ID: {plan_id}")
+        for path in relative_paths:
+            print(f"   Implemented: {path}")
+        print(f"   Ledger: {artifact_root / 'ledger.jsonl'}")
+        print("   Next: run tests and complete verification evidence")
+        return 0
+
+    def _ultragoal_status(self, args: list[str]) -> int:
+        """Render status for an artifact-only ultragoal ledger."""
+        import json
+        from pathlib import Path
+
+        plan_id = ""
+        if args:
+            if len(args) == 2 and args[0] == "--plan-id":
+                plan_id = args[1]
+            else:
+                print("Usage: omp ultragoal status [--plan-id <id>]")
+                return 1
+
+        root = Path.cwd() / ".omp" / "ultragoal"
+        artifact_root = root / "plans" / plan_id if plan_id else root
+        goals_path = artifact_root / "goals.json"
+        if not goals_path.exists():
+            print("No ultragoal artifacts found.")
+            print("Run: omp ultragoal create-goals --brief <brief>")
+            return 1
+
+        data = json.loads(goals_path.read_text(encoding="utf-8"))
+        goals = data.get("goals", [])
+        completed = len([goal for goal in goals if goal.get("status") == "completed"])
+        print(f"🎯 Ultragoal: {data.get('name', 'unknown')}")
+        if plan_id:
+            print(f"   Plan ID: {plan_id}")
+        print(f"   Status: {data.get('status', 'unknown')}")
+        print(f"   Goals: {completed}/{len(goals)} completed")
+        print(f"   Artifact: {artifact_root}")
+        return 0
+
+    def _ultragoal_list_plans(self) -> int:
+        """List available plan-scoped ultragoal ledgers."""
+        from pathlib import Path
+
+        root = Path.cwd() / ".omp" / "ultragoal"
+        plans_root = root / "plans"
+        print("🎯 Ultragoal plans")
+        if (root / "goals.json").exists():
+            print("   default")
+        for path in sorted(plans_root.iterdir()) if plans_root.exists() else []:
+            if path.is_dir() and (path / "goals.json").exists():
+                print(f"   {path.name}")
         return 0
 
     def _team_command(self, args: list[str]) -> int:
@@ -801,6 +970,10 @@ class CLI:
 
     def _doctor_command(self, args: list[str] = None) -> int:
         """$doctor — check system and skill health."""
+        args = args or []
+        if "--strict" in args:
+            return self._strict_doctor_command(args)
+
         print(f"🩺 Doctor — {self.name} v{self.version}")
         print()
         print("Checking skills...")
@@ -846,6 +1019,84 @@ class CLI:
             print(f"  ✗ Import error: {e}")
             return 1
         return 0
+
+    def _strict_doctor_command(self, args: list[str]) -> int:
+        """Run a stricter CLI audit that distinguishes placeholders from working surfaces."""
+        import json
+
+        commands = self._cli_surface_audit()
+        placeholder_count = len([item for item in commands if item["status"] == "placeholder"])
+        blocked_count = len([item for item in commands if item["status"] == "external-blocked"])
+        status = "operational" if placeholder_count == 0 and blocked_count == 0 else "degraded"
+
+        if "--json" in args:
+            print(json.dumps({"status": status, "commands": commands}, ensure_ascii=False, indent=2))
+            return 0 if status == "operational" else 1
+
+        print(f"🩺 Doctor — {self.name} v{self.version}")
+        print()
+        print("Strict CLI audit:")
+        for item in commands:
+            marker = "✓" if item["status"] in {"executable", "artifact", "state", "external"} else "!"
+            print(f"  {marker} {item['command']:<24} {item['status']:<16} {item['evidence']}")
+
+        print()
+        print(f"Summary: {status}")
+        print(f"  placeholders: {placeholder_count}")
+        print(f"  external blocked: {blocked_count}")
+        if placeholder_count:
+            print("  Note: placeholder means the CLI prints guidance but does not yet create state, artifacts, or run work.")
+        return 0 if status == "operational" else 1
+
+    def _cli_surface_audit(self) -> list[dict[str, str]]:
+        """Describe CLI surfaces by their current implementation depth."""
+        return [
+            {"command": "doctor", "status": "executable", "evidence": "imports skills and can run strict audit"},
+            {"command": "skills", "status": "executable", "evidence": "lists registered skill surfaces"},
+            {"command": "agents", "status": "executable", "evidence": "lists agent catalog"},
+            {"command": "setup", "status": "state", "evidence": "creates .omp state directories"},
+            {"command": "hud", "status": "state", "evidence": "reads .omp state summary"},
+            {"command": "ask", "status": "external", "evidence": "records artifacts and invokes provider when available"},
+            {"command": "wait", "status": "state", "evidence": "persists wait state"},
+            {"command": "session", "status": "state", "evidence": "summarizes .omp session records"},
+            {"command": "config-stop-callback", "status": "state", "evidence": "persists notification config"},
+            {"command": "team", "status": "artifact", "evidence": "prepares provider team/control artifacts, not full worker lifecycle"},
+            {"command": "ultragoal", "status": "artifact", "evidence": "creates ledger artifacts and has built-in websocket execute path"},
+            {"command": "agent", "status": "artifact", "evidence": "records agent invocation metadata"},
+            {"command": "interview", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "ralplan", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "prometheus", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "ralph", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "review", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "ultraqa", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "plan", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "brainstorm", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "domain", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "best-practice", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "autoresearch", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "autoresearch-goal", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "autopilot", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "diagnose", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "sparkshell", "status": "placeholder", "evidence": "prints validation guidance only"},
+            {"command": "wiki", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "hooks", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "github", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "analyze", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "tdd", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "security-review", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "build-fix", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "git-master", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "ultrawork", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "visual-verdict", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "ecomode", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "swarm", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "deepsearch", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "design", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "visual-ralph", "status": "placeholder", "evidence": "prints phase guidance only"},
+            {"command": "cancel", "status": "placeholder", "evidence": "prints cancellation guidance only"},
+            {"command": "note", "status": "placeholder", "evidence": "prints note text only"},
+            {"command": "trace", "status": "placeholder", "evidence": "prints tracing guidance only"},
+        ]
 
     # === New Execution Modes ===
 
@@ -1038,14 +1289,16 @@ class CLI:
     def _hud_command(self, args: list[str] = None) -> int:
         """$hud — heads-up display of current state."""
         from pathlib import Path
+        from domain import AgentRegistry
         from skills import StateSummarySkill
 
         summary = StateSummarySkill().summarize(Path.cwd() / ".omp" / "state")
+        agent_count = len(AgentRegistry().list_all())
         print(f"📊 HUD — {self.name} v{self.version}")
         print()
         print("Current state:")
         print("  Skills loaded: 34")
-        print("  Agent catalog: 30 agents")
+        print(f"  Agent catalog: {agent_count} agents")
         print(f"  State files: {summary.total_files}")
         print(f"  Wait state: {summary.wait_state}")
         print(f"  Notification channel: {summary.notification_channel}")
@@ -1059,7 +1312,7 @@ class CLI:
         from skills import ProjectSetupSkill
 
         result = ProjectSetupSkill().initialize(Path.cwd())
-        print("⚙️  OMX Setup")
+        print("⚙️  OMP Setup")
         print("   Initialize oh-my-copilot for this project.")
         print(f"   Status: {result.status.value}")
         print(f"   State root: {result.state_root}")

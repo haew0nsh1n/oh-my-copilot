@@ -37,6 +37,10 @@ omp skills
 # 헬스체크 (전체 34개 스킬 확인)
 omp doctor
 
+# 실제 CLI 동작 깊이 점검 (placeholder surface가 있으면 exit 1)
+omp doctor --strict
+omp doctor --strict --json
+
 # 버전 확인
 omp version
 
@@ -50,8 +54,23 @@ omp ralplan "OAuth2 인증 재설계"
 # 3. 계획 강화 - 고위험 계획 검증
 omp prometheus "인증 시스템 계획"
 
-# 4. 목표 실행 - 다중 목표 추적
+# 4. 목표 실행 - artifact-only 목표 ledger 생성
 omp ultragoal "승인된 계획 실행"
+omp ultragoal execute
+omp ultragoal create-goals --auto-plan-id --brief "웹소켓 클라이언트 생성"
+omp ultragoal status
+omp ultragoal list-plans
+
+`omp ultragoal`은 백그라운드 worker를 띄우지 않습니다. OMC의 Artifact-only Ultragoal처럼
+`.omp/ultragoal/brief.md`, `.omp/ultragoal/goals.json`, `.omp/ultragoal/ledger.jsonl`에
+목표, 체크포인트, evidence ledger를 저장합니다. 병렬 세션처럼 충돌을 피해야 할 때는
+`--auto-plan-id` 또는 `--plan-id <id>`를 사용하면 `.omp/ultragoal/plans/{planId}/` 아래에
+plan-scoped artifact가 생성됩니다.
+
+현재 built-in 실행기는 `웹소켓 클라이언트 생성` 목표를 실제 구현 단계에 연결합니다.
+`omp ultragoal execute`를 실행하면 `src/core/websocket_client.py`와
+`tests/unit/core/test_websocket_client.py`가 생성되고, `.omp/ultragoal/ledger.jsonl`에
+evidence path가 기록됩니다.
 
 # 병렬 provider team 요청 준비
 omp team --check 2:codex "인증 모듈 리뷰"
@@ -130,6 +149,11 @@ omp tdd "refresh token 기능"
 ```
 
 개발 중 editable install 전에는 `PYTHONPATH=src python -m cli <command>`를 fallback으로 사용할 수 있습니다.
+
+`omp doctor`는 스킬 import와 등록 상태를 확인하는 기본 health check입니다. 실제로 명령이 파일,
+state, artifact, 외부 provider 실행까지 수행하는지 확인하려면 `omp doctor --strict`를 사용합니다.
+`placeholder`로 표시되는 명령은 현재 단계 안내만 출력하며 아직 구현 작업, 상태 저장, 또는 artifact 생성을
+수행하지 않습니다.
 
 ### 방법 2: Python 코드에서 직접 사용
 
@@ -301,7 +325,7 @@ repo = github.create_repository(
 | 스킬 | 설명 | 메인 메서드 |
 |------|------|-----------|
 | **DeepInterviewSkill** | 요구사항 명확화를 위한 심층 인터뷰 | `create_session()`, `ask_question()`, `clarify_goals()` |
-| **UltragoalSkill** | 승인된 계획을 다중 목표 실행으로 변환 | `create_ultragoal()`, `create_goal()`, `add_checkpoint()` |
+| **UltragoalSkill** | 승인된 계획을 artifact-only 목표 ledger로 변환 | `create_artifact_only_ultragoal()`, `save_artifacts()`, `create_goal()` |
 | **TeamRuntimeSkill** | 여러 워커를 통한 병렬 실행 조정 | `create_team()`, `create_worker()`, `distribute_tasks()` |
 | **SparkshellSkill** | 안전 검증을 통한 셸 명령어 실행 | `create_session()`, `validate_command()`, `execute_command()` |
 | **WikiSkill** | 프로젝트 지식 관리 및 검색 | `create_page()`, `search_by_tag()`, `publish_page()` |
