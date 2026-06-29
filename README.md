@@ -41,6 +41,28 @@ omp doctor
 omp doctor --strict
 omp doctor --strict --json
 
+# OMC terminal CLI compatibility examples
+omp launch --print
+omp interop
+omp config --paths
+omp config-notify-profile demo
+omp info
+omp test-prompt "review this prompt"
+omp update --check
+omp update-reconcile
+omp install --quiet
+omp wait status
+omp wait daemon start
+omp wait detect
+omp teleport '#123'
+omp teleport list
+omp session search codex --json
+omp sessions search codex --json
+omp doctor team-routing --json
+omp doctor conflicts --json
+omp mission-board --json
+omp ralphthon "ship it"
+
 # 버전 확인
 omp version
 

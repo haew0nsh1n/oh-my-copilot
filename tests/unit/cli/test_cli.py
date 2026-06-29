@@ -32,6 +32,37 @@ class TestCLIBasics:
 
         assert pyproject["project"]["scripts"]["omp"] == "cli:main"
 
+    def test_omc_top_level_cli_surface_is_registered(self):
+        """OMP exposes OMC-compatible terminal CLI commands."""
+        cli = CLI()
+        expected = {
+            "launch",
+            "interop",
+            "ask",
+            "config",
+            "config-stop-callback",
+            "config-notify-profile",
+            "info",
+            "test-prompt",
+            "update",
+            "update-reconcile",
+            "install",
+            "wait",
+            "teleport",
+            "session",
+            "sessions",
+            "doctor",
+            "setup",
+            "hud",
+            "mission-board",
+            "team",
+            "autoresearch",
+            "ralphthon",
+            "ultragoal",
+        }
+
+        assert expected.issubset(cli.commands)
+
 
 class TestCLICommands:
     """Test CLI commands."""
@@ -407,6 +438,8 @@ class TestUtilityCLICommands:
         data = json.loads(capsys.readouterr().out)
         assert data["status"] == "operational"
         assert any(item["command"] == "ultragoal" for item in data["commands"])
+        assert any(item["command"] == "launch" for item in data["commands"])
+        assert any(item["command"] == "mission-board" for item in data["commands"])
         assert not any(item["status"] == "placeholder" for item in data["commands"])
 
     def test_artifact_backed_command_records_execution(self, tmp_path, monkeypatch, capsys):
@@ -441,6 +474,41 @@ class TestUtilityCLICommands:
         """setup command works as the public OMP setup entry point."""
         cli = CLI()
         assert cli.run(["setup"]) == 0
+
+    def test_omc_compat_commands_write_state(self, tmp_path, monkeypatch, capsys):
+        """Representative OMC-compatible commands create state or output."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["launch", "--print"]) == 0
+        assert cli.run(["interop"]) == 0
+        assert cli.run(["config", "--paths"]) == 0
+        assert cli.run(["config-notify-profile", "demo"]) == 0
+        assert cli.run(["info"]) == 0
+        assert cli.run(["test-prompt", "hello"]) == 0
+        assert cli.run(["update", "--check"]) == 0
+        assert cli.run(["update-reconcile"]) == 0
+        assert cli.run(["install"]) == 0
+        assert cli.run(["teleport", "#123"]) == 0
+        assert cli.run(["mission-board", "--json"]) == 0
+        assert cli.run(["ralphthon", "ship", "it"]) == 0
+
+        assert (tmp_path / ".omp" / "state" / "launch.json").exists()
+        assert (tmp_path / ".omp" / "state" / "notify-profiles.json").exists()
+        assert (tmp_path / ".omp" / "state" / "ralphthon.json").exists()
+
+    def test_omc_compat_subcommands(self, tmp_path, monkeypatch):
+        """Representative OMC-compatible subcommands work."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["wait", "status"]) == 0
+        assert cli.run(["wait", "daemon", "start"]) == 0
+        assert cli.run(["wait", "detect"]) == 0
+        assert cli.run(["session", "search", "missing", "--json"]) == 0
+        assert cli.run(["sessions", "search", "missing", "--json"]) == 0
+        assert cli.run(["doctor", "team-routing", "--json"]) == 0
+        assert cli.run(["doctor", "conflicts", "--json"]) == 0
 
     def test_ask_command(self):
         """ask command prepares a provider advisor request."""
