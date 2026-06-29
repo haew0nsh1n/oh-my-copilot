@@ -334,6 +334,14 @@ class TestUtilityCLICommands:
 
     def test_ask_execute_records_sanitized_session(self, tmp_path, monkeypatch):
         """ask --execute records sanitized session metadata."""
+        for key in [
+            "AZURE_OPENAI_ENDPOINT",
+            "AZURE_OPENAI_API_KEY",
+            "AZURE_OPENAI_CODEX_DEPLOYMENT",
+            "AZURE_OPENAI_API_VERSION",
+            "AZURE_OPENAI_DEPLOYMENT",
+        ]:
+            monkeypatch.delenv(key, raising=False)
         monkeypatch.chdir(tmp_path)
 
         cli = CLI()

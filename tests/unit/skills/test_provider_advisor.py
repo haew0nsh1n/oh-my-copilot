@@ -1,5 +1,6 @@
 """Tests for provider advisor skill."""
 
+from core import ProviderRuntime
 from skills import ProviderAdvisorSkill
 from domain import ProviderName, ProviderAdvisorStatus
 
@@ -31,7 +32,9 @@ class TestProviderAdvisorBasics:
 
     def test_skill_blocks_missing_provider_cli(self):
         """Provider advisor blocks execution when provider CLI is missing."""
-        skill = ProviderAdvisorSkill(executable_resolver=lambda command: None)
+        skill = ProviderAdvisorSkill(
+            provider_runtime=ProviderRuntime(executable_resolver=lambda command: None, env={})
+        )
 
         availability = skill.check_provider("codex")
 
@@ -62,7 +65,9 @@ class TestProviderAdvisorBasics:
 
     def test_skill_blocks_execution_when_provider_cli_missing(self):
         """Provider advisor blocks execution when the provider executable is missing."""
-        skill = ProviderAdvisorSkill(executable_resolver=lambda command: None)
+        skill = ProviderAdvisorSkill(
+            provider_runtime=ProviderRuntime(executable_resolver=lambda command: None, env={})
+        )
 
         result = skill.execute("codex", "review this migration plan")
 

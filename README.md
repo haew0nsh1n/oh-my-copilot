@@ -86,6 +86,28 @@ omp ask --check codex
 omp ask codex "인증 패치 리뷰"
 omp ask --execute codex "인증 패치 리뷰"
 
+`codex` provider can use an Azure OpenAI deployment instead of a local `codex` CLI when these environment variables are set:
+
+```bash
+export AZURE_OPENAI_ENDPOINT="https://<resource>.openai.azure.com"
+export AZURE_OPENAI_API_KEY="<api-key>"
+export AZURE_OPENAI_CODEX_DEPLOYMENT="<codex-deployment-name>"
+export AZURE_OPENAI_API_VERSION="2025-04-01-preview"
+
+omp ask --check codex
+omp ask --execute codex "인증 패치 리뷰"
+```
+
+The deployment name can point to your AOAI-hosted Codex deployment, such as a `codex-5-3` deployment if that is how it is named in your Azure OpenAI resource. Secrets are read only from environment variables and are not written to `.omp` artifacts or session records.
+
+`AZURE_OPENAI_API_KEY` is optional when you are signed in with Azure CLI. If the API key is unset, `omp ask --check codex` and `omp ask --execute codex ...` try `az account get-access-token --resource https://cognitiveservices.azure.com/` and call Azure OpenAI with a Bearer token instead.
+
+```bash
+az login
+source .env
+omp ask --check codex
+```
+
 # Rate-limit wait 상태 확인 및 auto-resume 준비
 omp wait
 omp wait --start
