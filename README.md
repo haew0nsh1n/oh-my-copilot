@@ -326,8 +326,10 @@ repo = github.create_repository(
 
 - `src/` - Main package
   - `domain/` - 도메인 모델 (보편 언어 / ubiquitous language)
-  - `skills/` - 스킬 구현 (아이디어 생성, 도메인 정의, 버그 진단, 코드 리뷰, GitHub 통합)
+    - `skills/` - Python product skill API
   - `cli/` - 명령어 인터페이스
+- `skills/` - oh-my-claudecode 방식의 Markdown skill bodies
+    - `skills/<name>/SKILL.md` - OMC-style product skill body
 - `tests/` - TDD 기반 테스트
   - `unit/skills/` - 각 스킬 테스트
   - `unit/cli/` - CLI 테스트
@@ -337,6 +339,11 @@ repo = github.create_repository(
 ## 📚 Skills
 
 34가지 엔지니어링 스킬이 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
+
+각 스킬은 Python API와 Markdown skill body를 함께 가집니다. Python API는 `from skills import ...`로
+직접 사용할 수 있는 제품 인터페이스이고, `skills/<name>/SKILL.md`는 oh-my-claudecode의
+`skills/<name>/SKILL.md` 구조에 맞춘 Markdown 표현입니다. source distribution에는 `MANIFEST.in`을
+통해 루트 `skills/*/SKILL.md`가 포함됩니다.
 
 ### Phase 1: 기본 스킬 (5개)
 
