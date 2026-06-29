@@ -24,6 +24,7 @@ class CLI:
             "install": self._install_command,
             "teleport": self._teleport_command,
             "mission-board": self._mission_board_command,
+            "bridge": self._bridge_command,
             "ralphthon": self._ralphthon_command,
             # === Canonical Workflow ===
             "interview": self._interview_command,
@@ -396,6 +397,34 @@ class CLI:
         else:
             print("📋 Mission Board")
             print(f"   State files: {len(snapshot['state_files'])}")
+        return 0
+
+    def _bridge_command(self, args: list[str]) -> int:
+        """Expose local OMP state and artifacts for Copilot-native workflows."""
+        import json
+        from pathlib import Path
+
+        from core import OmpBridge
+
+        bridge = OmpBridge(Path.cwd())
+        if not args or args[0] == "status":
+            data = bridge.status()
+        elif args[0] == "state" and len(args) >= 2:
+            data = bridge.read_state(args[1])
+        elif args[0] == "artifacts":
+            command = args[1] if len(args) >= 2 and not args[1].startswith("--") else None
+            data = {"artifacts": bridge.list_artifacts(command)}
+        else:
+            print("Usage: omp bridge status [--json]")
+            print("       omp bridge state <name> [--json]")
+            print("       omp bridge artifacts [command] [--json]")
+            return 1
+
+        if "--json" in args:
+            print(json.dumps(data, ensure_ascii=False, indent=2))
+        else:
+            print("🌉 OMP Bridge")
+            print(json.dumps(data, ensure_ascii=False, indent=2))
         return 0
 
     def _ralphthon_command(self, args: list[str]) -> int:

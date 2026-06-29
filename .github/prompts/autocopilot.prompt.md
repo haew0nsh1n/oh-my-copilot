@@ -30,8 +30,18 @@ command -v gh || true
 command -v uv || true
 PYTHONPATH=src .venv/bin/python -m cli doctor
 PYTHONPATH=src .venv/bin/python -m cli autopilot "environment readiness smoke"
+PYTHONPATH=src .venv/bin/python -m cli bridge status --json
 .venv/bin/python -m pytest -q
 ```
+
+When running inside VS Code, prefer the workspace tasks in `.vscode/tasks.json` for repeatable validation:
+
+- `omp: bridge status`
+- `omp: doctor strict`
+- `omp: pytest`
+- `omp: e2e runtime parity`
+
+Use `omp bridge status --json`, `omp bridge state <name> --json`, and `omp bridge artifacts [command] --json` to inspect local `.omp` state before deciding whether a workflow is genuinely complete. If a validation fails, fix the smallest failing slice and repeat until the bridge state, strict doctor, focused tests, and relevant smoke command all pass.
 
 If `.venv` is missing, use the repo's documented setup path. Prefer `uv` when available; otherwise use `python3 -m venv .venv` and install `.[dev]`.
 
@@ -59,6 +69,8 @@ For the requested scope:
 9. Update README, AGENTS, CONTEXT, ADRs, or docs when user-facing behavior, public APIs, or workflow assumptions change.
 
 Continue through adjacent parity gaps in the requested scope. Do not stop at a plan when code can be implemented. Do not declare completion without executable validation evidence.
+
+For Copilot-native execution, repeat until all requested checks are green: inspect bridge state, run the narrow failing command/test, repair locally, then rerun `omp bridge status --json`, `omp doctor --strict`, and the relevant VS Code task or pytest command.
 
 ## Architecture Rules
 

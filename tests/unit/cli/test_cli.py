@@ -470,6 +470,29 @@ class TestUtilityCLICommands:
         assert "State files: 1" in output
         assert "Agent catalog: 32 agents" in output
 
+    def test_bridge_status_command_outputs_json(self, tmp_path, monkeypatch, capsys):
+        """bridge status exposes local OMP state for Copilot-native workflows."""
+        (tmp_path / ".omp" / "state").mkdir(parents=True)
+        (tmp_path / ".omp" / "state" / "wait.json").write_text('{"action":"start"}\n')
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["bridge", "status", "--json"]) == 0
+        data = json.loads(capsys.readouterr().out)
+        assert data["state_files"] == ["wait.json"]
+
+    def test_bridge_state_command_outputs_json(self, tmp_path, monkeypatch, capsys):
+        """bridge state reads a named .omp/state file."""
+        state_root = tmp_path / ".omp" / "state"
+        state_root.mkdir(parents=True)
+        (state_root / "autopilot.json").write_text('{"status":"completed"}\n')
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["bridge", "state", "autopilot", "--json"]) == 0
+        data = json.loads(capsys.readouterr().out)
+        assert data["status"] == "completed"
+
     def test_setup_command(self):
         """setup command works as the public OMP setup entry point."""
         cli = CLI()
