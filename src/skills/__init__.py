@@ -34,6 +34,7 @@ from .session_friction import SessionFrictionSkill
 from .notification_config import NotificationConfigSkill
 from .project_setup import ProjectSetupSkill
 from .state_summary import StateSummarySkill
+from .source_parity import SourceParitySkill
 
 __all__ = [
     "BrainstormingSkill",
@@ -70,4 +71,5 @@ __all__ = [
     "NotificationConfigSkill",
     "ProjectSetupSkill",
     "StateSummarySkill",
+    "SourceParitySkill",
 ]

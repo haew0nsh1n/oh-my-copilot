@@ -238,6 +238,12 @@ from .project_setup import (
     ProjectSetupStatus,
 )
 from .state_summary import StateSummary
+from .source_parity import (
+    SourceParityItem,
+    SourceParityReport,
+    SourceParityStatus,
+    count_reference_source_families,
+)
 
 __all__ = [
     "BrainstormSession",
@@ -412,4 +418,8 @@ __all__ = [
     "ProjectSetupResult",
     "ProjectSetupStatus",
     "StateSummary",
+    "SourceParityItem",
+    "SourceParityReport",
+    "SourceParityStatus",
+    "count_reference_source_families",
 ]

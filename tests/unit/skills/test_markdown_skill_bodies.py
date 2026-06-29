@@ -58,7 +58,7 @@ def test_each_python_skill_has_markdown_skill_body():
         if path.name != "__init__.py" and not path.name.startswith("_")
     )
 
-    assert len(skill_modules) == 34
+    assert len(skill_modules) == 35
 
     for module_name in skill_modules:
         skill_body = markdown_skills_root / module_name.replace("_", "-") / "SKILL.md"

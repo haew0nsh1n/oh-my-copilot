@@ -34,7 +34,7 @@ omp help
 # 전체 스킬 목록
 omp skills
 
-# 헬스체크 (전체 34개 스킬 확인)
+# 헬스체크 (전체 35개 스킬 확인)
 omp doctor
 
 # 실제 CLI 동작 깊이 점검
@@ -345,7 +345,7 @@ repo = github.create_repository(
 
 ## 📚 Skills
 
-34가지 Python product skill, 64개의 루트 Markdown skill body, 28개의 OMC-style command body가 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
+35가지 Python product skill, 65개의 루트 Markdown skill body, 28개의 OMC-style command body가 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
 
 각 스킬은 Python API와 Markdown skill body를 함께 가집니다. Python API는 `from skills import ...`로
 직접 사용할 수 있는 제품 인터페이스이고, `skills/<name>/SKILL.md`는 oh-my-claudecode의
@@ -397,6 +397,12 @@ repo = github.create_repository(
 | **AutoresearchGoalSkill** | 목표 모드 연구 (Professor/Critic 검증) | `create_research_mission()`, `add_finding()`, `validate_finding()` | `$autoresearch-goal` |
 | **AutopilotSkill** | 자율 전체 워크플로우 루프 | `create_workflow()`, `complete_phase()`, `trigger_replan()` | `$autopilot` |
 | **StrategicPlanSkill** | 고수준 전략 계획 | `create_plan()`, `add_goal()`, `add_objective()` | `$plan` |
+
+### Phase 5: Parity 분석 스킬 (1개)
+
+| 스킬 | 설명 | 메인 메서드 | OMC 대응 |
+|------|------|-----------|----------|
+| **SourceParitySkill** | OMC `src/` runtime family와 OMP source surface 비교 | `audit()` | `src/` implementation parity |
 
 ## Development
 

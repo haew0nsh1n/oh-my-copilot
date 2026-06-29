@@ -26,6 +26,7 @@ class CLI:
             "mission-board": self._mission_board_command,
             "bridge": self._bridge_command,
             "ralphthon": self._ralphthon_command,
+            "source-parity": self._source_parity_command,
             # === Canonical Workflow ===
             "interview": self._interview_command,
             "deep-interview": self._interview_command,
@@ -329,7 +330,7 @@ class CLI:
 
         print(f"oh-my-copilot {self.version}")
         print("Runtime: Python")
-        print("Skills: 34")
+        print("Skills: 35")
         print(f"Agents: {len(AgentRegistry().list_all())}")
         return 0
 
@@ -1357,6 +1358,7 @@ class CLI:
         print("  wait             Rate-limit wait guidance")
         print("  session          Local session friction reports")
         print("  config-stop-callback  Notification callback prep")
+        print("  source-parity    Compare OMC src families with OMP implementation surfaces")
         print()
         print("Agent Shortcuts:")
         print("  analyze          Codebase discovery ($analyze)")
@@ -1405,6 +1407,7 @@ class CLI:
                 NotificationConfigSkill,
                 ProjectSetupSkill,
                 StateSummarySkill,
+                SourceParitySkill,
             )
             skills = [
                 BrainstormingSkill, DomainModelingSkill, DiagnosticSkill,
@@ -1421,6 +1424,7 @@ class CLI:
                 NotificationConfigSkill,
                 ProjectSetupSkill,
                 StateSummarySkill,
+                SourceParitySkill,
             ]
             for skill_cls in skills:
                 s = skill_cls()
@@ -1475,6 +1479,7 @@ class CLI:
             {"command": "teleport", "status": "state", "evidence": "writes .omp/state/teleport-*.json metadata"},
             {"command": "mission-board", "status": "executable", "evidence": "renders .omp/state mission snapshot"},
             {"command": "ralphthon", "status": "state", "evidence": "writes .omp/state/ralphthon.json lifecycle state"},
+            {"command": "source-parity", "status": "executable", "evidence": "compares OMC src families with OMP source surfaces"},
             {"command": "doctor", "status": "executable", "evidence": "imports skills and can run strict audit"},
             {"command": "skills", "status": "executable", "evidence": "lists registered skill surfaces"},
             {"command": "agents", "status": "executable", "evidence": "lists agent catalog"},
@@ -1733,7 +1738,7 @@ class CLI:
         print(f"📊 HUD — {self.name} v{self.version}")
         print()
         print("Current state:")
-        print("  Skills loaded: 34")
+        print("  Skills loaded: 35")
         print(f"  Agent catalog: {agent_count} agents")
         print(f"  State files: {summary.total_files}")
         print(f"  Wait state: {summary.wait_state}")
@@ -1773,6 +1778,61 @@ class CLI:
         print("   Creates owner record and first iteration scaffold.")
         return 0
 
+    def _source_parity_command(self, args: list[str] = None) -> int:
+        """Compare OMC src implementation families with OMP source surfaces."""
+        args = args or []
+        import json
+
+        from skills import SourceParitySkill
+
+        json_output = "--json" in args
+        reference_args = [arg for arg in args if arg != "--json"]
+        reference_src = reference_args[0] if reference_args else None
+        report = SourceParitySkill().audit(reference_src)
+
+        payload = {
+            "reference": report.reference,
+            "total_reference_files": report.total_reference_files,
+            "families": [
+                {
+                    "family": item.family,
+                    "reference_file_count": item.reference_file_count,
+                    "status": item.status.value,
+                    "omp_surfaces": list(item.omp_surfaces),
+                    "notes": item.notes,
+                }
+                for item in report.items
+            ],
+            "gaps": [item.family for item in report.gap_items],
+            "unknown_reference_families": list(report.unknown_reference_families),
+            "changed_reference_counts": {
+                family: {"expected": counts[0], "observed": counts[1]}
+                for family, counts in report.changed_reference_counts.items()
+            },
+        }
+
+        if json_output:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return 0
+
+        print("Source Parity — OMC src to OMP source surfaces")
+        print(f"Reference: {report.reference}")
+        print(f"Families: {len(report.items)}")
+        print(f"Reference runtime files represented: {report.total_reference_files}")
+        print()
+        for item in report.items:
+            surfaces = ", ".join(item.omp_surfaces) if item.omp_surfaces else "none"
+            print(f"  {item.status.value:11} {item.family:18} {item.reference_file_count:3} files -> {surfaces}")
+        print()
+        print("Gaps:", ", ".join(payload["gaps"]) if payload["gaps"] else "none")
+        if report.unknown_reference_families:
+            print("Unknown reference families:", ", ".join(report.unknown_reference_families))
+        if report.changed_reference_counts:
+            print("Changed reference counts:")
+            for family, (expected, observed) in report.changed_reference_counts.items():
+                print(f"  {family}: expected {expected}, observed {observed}")
+        return 0
+
     def _help_command(self, args: list[str] = None) -> int:
         """Show help message."""
         print(f"{self.name} v{self.version}")
@@ -1805,6 +1865,7 @@ class CLI:
         print("  wait [--start|--stop]      Rate-limit wait guidance")
         print("  session friction report --since <window>  Local friction report")
         print("  config-stop-callback <channel> [--tag-list <tags>]  Notification prep")
+        print("  source-parity [omc/src]    Compare OMC src implementation parity")
         print("  analyze <query>            Codebase analysis")
         print("  tdd <feature>              Test-driven development")
         print("  security-review <scope>    Security audit")

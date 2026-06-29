@@ -59,6 +59,7 @@ class TestCLIBasics:
             "autoresearch",
             "ralphthon",
             "ultragoal",
+            "source-parity",
         }
 
         assert expected.issubset(cli.commands)
@@ -120,6 +121,19 @@ class TestCLICommands:
         cli = CLI()
         result = cli.run(["review", "Add", "user", "authentication"])
         assert result == 0
+
+    def test_source_parity_command_reports_omc_src_matrix(self, capsys):
+        """Source parity command reports OMC src implementation family status."""
+        cli = CLI()
+
+        result = cli.run(["source-parity", "--json"])
+
+        assert result == 0
+        output = json.loads(capsys.readouterr().out)
+        assert output["reference"] == "oh-my-claudecode/src"
+        assert output["total_reference_files"] == 523
+        assert "mcp" in output["gaps"]
+        assert any(item["family"] == "team" for item in output["families"])
 
 
 class TestCLIErrorHandling:
