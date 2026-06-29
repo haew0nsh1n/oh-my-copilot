@@ -338,12 +338,15 @@ repo = github.create_repository(
 
 ## 📚 Skills
 
-34가지 엔지니어링 스킬이 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
+34가지 Python product skill과 64개의 루트 Markdown skill body가 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
 
 각 스킬은 Python API와 Markdown skill body를 함께 가집니다. Python API는 `from skills import ...`로
 직접 사용할 수 있는 제품 인터페이스이고, `skills/<name>/SKILL.md`는 oh-my-claudecode의
 `skills/<name>/SKILL.md` 구조에 맞춘 Markdown 표현입니다. source distribution에는 `MANIFEST.in`을
 통해 루트 `skills/*/SKILL.md`가 포함됩니다.
+
+루트 Markdown skill body는 oh-my-copilot 고유 product skill과 oh-my-claudecode 공개 skill surface의
+호환 body를 함께 포함합니다.
 
 ### Phase 1: 기본 스킬 (5개)
 
