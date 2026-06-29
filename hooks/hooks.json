@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "SessionStart": ["templates/hooks/session-start.mjs"],
+    "PreToolUse": ["templates/hooks/pre-tool-use.mjs"],
+    "PostToolUse": ["templates/hooks/post-tool-use.mjs"],
+    "PostToolUseFailure": ["templates/hooks/post-tool-use-failure.mjs"],
+    "Stop": ["templates/hooks/persistent-mode.mjs", "templates/hooks/workflow-drift-guard.mjs", "templates/hooks/stop-continuation.mjs"]
+  }
+}

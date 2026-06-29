@@ -332,6 +332,11 @@ repo = github.create_repository(
     - `skills/<name>/SKILL.md` - OMC-style product skill body
 - `commands/` - oh-my-claudecode 방식의 lightweight slash command wrappers
     - `commands/<name>.md` - root skill body로 dispatch하는 command body
+- `agents/` - OMC-compatible agent prompt surfaces
+- `hooks/`, `templates/hooks/` - OMC-compatible lifecycle hook surfaces
+- `bridge/` - local OMP bridge script for state/artifact inspection
+- `benchmark/`, `benchmarks/` - deterministic benchmark compatibility smoke surfaces
+- `missions/` - long-running parity mission and sandbox definitions
 - `tests/` - TDD 기반 테스트
   - `unit/skills/` - 각 스킬 테스트
   - `unit/cli/` - CLI 테스트
