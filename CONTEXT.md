@@ -61,7 +61,7 @@ CLI는 도메인 규칙을 소유하지 않습니다. 같은 규칙이 Python AP
 - Execution and coordination: `UltragoalSkill`, `TeamRuntimeSkill`, `RalphSkill`, `UltraworkSkill`, `AutopilotSkill`, `SwarmSkill`
 - Quality and verification: `CodeReviewSkill`, `UltraQASkill`, `VisualVerdictSkill`, `VisualRalphSkill`, `DiagnosticSkill`
 - Knowledge and research: `DomainModelingSkill`, `WikiSkill`, `AutoresearchSkill`, `AutoresearchGoalSkill`, `BestPracticeResearchSkill`, `DeepSearchSkill`, `DesignSkill`
-- Tooling and integration: `SparkshellSkill`, `HooksSkill`, `GitHubIntegrationSkill`, `ProviderAdvisorSkill`, `RateLimitWaitSkill`, `SessionFrictionSkill`, `NotificationConfigSkill`, `ProjectSetupSkill`, `EcomodeSkill`, `AgentCatalogSkill`
+- Tooling and integration: `SparkshellSkill`, `HooksSkill`, `GitHubIntegrationSkill`, `ProviderAdvisorSkill`, `RateLimitWaitSkill`, `SessionFrictionSkill`, `NotificationConfigSkill`, `ProjectSetupSkill`, `StateSummarySkill`, `EcomodeSkill`, `AgentCatalogSkill`
 
 ## Parity Model
 

@@ -79,7 +79,7 @@ interview -> ralplan -> prometheus -> ultragoal -> review -> ultraqa
 작업 완료를 선언하려면 최소 하나 이상의 실행 가능한 검증 증거가 있어야 합니다. 전체 테스트가 가능한 환경이면
 `uv run pytest`를 우선 사용합니다.
 
-## 스킬 목록 (33개)
+## 스킬 목록 (34개)
 
 ### 핵심 워크플로우
 | 스킬 | CLI | 설명 |
@@ -125,6 +125,7 @@ interview -> ralplan -> prometheus -> ultragoal -> review -> ultraqa
 | `SessionFrictionSkill` | `session` | 로컬 세션 friction report 요약 |
 | `NotificationConfigSkill` | `config-stop-callback` | stop callback notification 설정 준비 |
 | `ProjectSetupSkill` | `setup` | `.omp` 로컬 state root 초기화 |
+| `StateSummarySkill` | `hud` | `.omp` 로컬 state 요약 |
 
 ### Agent Shortcuts
 | 스킬 | CLI | 설명 |
@@ -201,7 +202,7 @@ omp skills            # 공개 CLI 목표: 스킬 목록
 omp agents            # 공개 CLI 목표: 에이전트 목록
 omp help              # 공개 CLI 목표: 전체 도움말
 
-python -m cli doctor   # 33개 스킬 헬스체크
+python -m cli doctor   # 34개 스킬 헬스체크
 python -m cli skills   # 스킬 목록
 python -m cli agents   # 에이전트 목록
 python -m cli help     # 전체 도움말

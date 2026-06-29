@@ -58,3 +58,12 @@ class NotificationConfigSkill:
             + "\n"
         )
         return NotificationConfigArtifact(channel=config.channel, path=path)
+
+    def load_config(self, state_root: Path | str) -> NotificationCallbackConfig:
+        """Restore non-secret notification callback settings."""
+        path = Path(state_root) / "notifications.json"
+        data = json.loads(path.read_text())
+        return NotificationCallbackConfig(
+            channel=NotificationChannel(data["channel"]),
+            tag_list=data.get("tag_list", []),
+        )

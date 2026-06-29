@@ -33,6 +33,7 @@ from .rate_limit_wait import RateLimitWaitSkill
 from .session_friction import SessionFrictionSkill
 from .notification_config import NotificationConfigSkill
 from .project_setup import ProjectSetupSkill
+from .state_summary import StateSummarySkill
 
 __all__ = [
     "BrainstormingSkill",
@@ -68,4 +69,5 @@ __all__ = [
     "SessionFrictionSkill",
     "NotificationConfigSkill",
     "ProjectSetupSkill",
+    "StateSummarySkill",
 ]

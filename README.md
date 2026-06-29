@@ -34,7 +34,7 @@ omp help
 # 전체 스킬 목록
 omp skills
 
-# 헬스체크 (전체 33개 스킬 확인)
+# 헬스체크 (전체 34개 스킬 확인)
 omp doctor
 
 # 버전 확인
@@ -93,6 +93,9 @@ omp wait --stop
 
 # 로컬 세션 friction report 요약
 omp session friction report --since 24h
+
+# 로컬 OMP state HUD 요약
+omp hud
 
 # Stop callback notification 설정 준비
 omp config-stop-callback telegram --tag-list "@alice,bob"
@@ -259,7 +262,7 @@ repo = github.create_repository(
 
 ## 📚 Skills
 
-33가지 엔지니어링 스킬이 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
+34가지 엔지니어링 스킬이 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
 
 ### Phase 1: 기본 스킬 (5개)
 

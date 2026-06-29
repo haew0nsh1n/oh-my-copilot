@@ -59,3 +59,14 @@ class RateLimitWaitSkill:
             + "\n"
         )
         return RateLimitWaitStateArtifact(path=path)
+
+    def load_state(self, state_root: Path | str) -> RateLimitWaitResult:
+        """Restore local rate-limit wait state."""
+        path = Path(state_root) / "wait.json"
+        data = json.loads(path.read_text())
+        return RateLimitWaitResult(
+            action=WaitAction(data["action"]),
+            status=WaitStatus(data["status"]),
+            guidance=data["guidance"],
+            tmux_required=data.get("tmux_required", True),
+        )

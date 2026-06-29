@@ -31,3 +31,15 @@ class TestNotificationConfigBasics:
         assert '"channel": "telegram"' in text
         assert '"@bob"' in text
         assert "token" not in text
+
+    def test_skill_can_load_stop_callback_config(self, tmp_path):
+        """Notification config restores non-secret callback settings."""
+        skill = NotificationConfigSkill()
+        config = skill.prepare_stop_callback("telegram", ["@alice", "bob"])
+        skill.save_config(config, tmp_path)
+
+        loaded = skill.load_config(tmp_path)
+
+        assert loaded.channel == NotificationChannel.TELEGRAM
+        assert loaded.tag_list == ["@alice", "@bob"]
+        assert loaded.status == NotificationConfigStatus.PREPARED

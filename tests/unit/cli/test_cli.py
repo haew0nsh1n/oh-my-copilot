@@ -1,5 +1,6 @@
 """Tests for CLI interface."""
 
+import json
 import tomllib
 
 import pytest
@@ -296,6 +297,19 @@ class TestUtilityCLICommands:
         cli = CLI()
         assert cli.run(["doctor"]) == 0
 
+    def test_hud_command_summarizes_state(self, tmp_path, monkeypatch, capsys):
+        """hud command summarizes persisted OMP state."""
+        state_root = tmp_path / ".omp" / "state"
+        state_root.mkdir(parents=True)
+        (state_root / "wait.json").write_text(json.dumps({"action": "start"}))
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["hud"]) == 0
+        output = capsys.readouterr().out
+        assert "Wait state: start" in output
+        assert "State files: 1" in output
+
     def test_setup_command(self):
         """setup command works as the public OMP setup entry point."""
         cli = CLI()
@@ -318,10 +332,30 @@ class TestUtilityCLICommands:
         output = capsys.readouterr().out
         assert "Artifact:" in output
 
-    def test_wait_command(self):
+    def test_wait_command(self, capsys):
         """wait command checks rate-limit wait state."""
         cli = CLI()
         assert cli.run(["wait"]) == 0
+        output = capsys.readouterr().out
+        assert "Wait:" in output
+
+    def test_wait_command_restores_saved_state(self, tmp_path, monkeypatch, capsys):
+        """wait command restores persisted wait state when present."""
+        state_root = tmp_path / ".omp" / "state"
+        state_root.mkdir(parents=True)
+        (state_root / "wait.json").write_text(json.dumps({
+            "action": "start",
+            "status": "prepared",
+            "tmux_required": True,
+            "guidance": "Auto-resume start prepared",
+        }))
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["wait"]) == 0
+        output = capsys.readouterr().out
+        assert "Restored:" in output
+        assert "Wait: start" in output
 
     def test_wait_start_command(self, capsys):
         """wait --start prepares auto-resume startup."""
@@ -353,6 +387,21 @@ class TestUtilityCLICommands:
         ]) == 0
         output = capsys.readouterr().out
         assert "Saved:" in output
+
+    def test_config_stop_callback_show_command(self, tmp_path, monkeypatch, capsys):
+        """config-stop-callback --show restores notification configuration."""
+        state_root = tmp_path / ".omp" / "state"
+        state_root.mkdir(parents=True)
+        (state_root / "notifications.json").write_text(
+            '{"channel":"telegram","status":"prepared","tag_list":["@alice"]}'
+        )
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["config-stop-callback", "--show"]) == 0
+        output = capsys.readouterr().out
+        assert "Restored:" in output
+        assert "telegram" in output
 
     def test_brainstorm_without_prompt(self):
         """RED: Brainstorm without prompt fails."""

@@ -564,7 +564,12 @@ class CLI:
             result = skill.stop_auto_resume()
             artifact = skill.save_state(result, Path.cwd() / ".omp" / "state")
         elif not args:
-            result = skill.check_status()
+            state_root = Path.cwd() / ".omp" / "state"
+            if (state_root / "wait.json").exists():
+                result = skill.load_state(state_root)
+                artifact = skill.save_state(result, state_root)
+            else:
+                result = skill.check_status()
         else:
             print("Usage: omp wait [--start|--stop]")
             return 1
@@ -573,6 +578,8 @@ class CLI:
         print(f"   Status: {result.status.value}")
         print(f"   Guidance: {result.guidance}")
         if artifact:
+            if not args:
+                print(f"   Restored: {artifact.path}")
             print(f"   Saved: {artifact.path}")
         return 0
 
@@ -606,6 +613,21 @@ class CLI:
 
     def _config_stop_callback_command(self, args: list[str]) -> int:
         """Configure stop callback notifications without collecting secrets."""
+        if args == ["--show"]:
+            try:
+                from pathlib import Path
+                from skills import NotificationConfigSkill
+
+                config = NotificationConfigSkill().load_config(Path.cwd() / ".omp" / "state")
+            except FileNotFoundError:
+                print("Error: notification config not found")
+                return 1
+            print(f"🔔 Stop Callback: {config.channel.value}")
+            print(f"   Status: {config.status.value}")
+            print(f"   Tags: {', '.join(config.tag_list) if config.tag_list else 'none'}")
+            print(f"   Restored: {Path.cwd() / '.omp' / 'state' / 'notifications.json'}")
+            return 0
+
         if not args:
             print("Usage: omp config-stop-callback <channel> [--tag-list <tags>]")
             return 1
@@ -772,6 +794,7 @@ class CLI:
                 SessionFrictionSkill,
                 NotificationConfigSkill,
                 ProjectSetupSkill,
+                StateSummarySkill,
             )
             skills = [
                 BrainstormingSkill, DomainModelingSkill, DiagnosticSkill,
@@ -787,6 +810,7 @@ class CLI:
                 SessionFrictionSkill,
                 NotificationConfigSkill,
                 ProjectSetupSkill,
+                StateSummarySkill,
             ]
             for skill_cls in skills:
                 s = skill_cls()
@@ -988,11 +1012,19 @@ class CLI:
 
     def _hud_command(self, args: list[str] = None) -> int:
         """$hud — heads-up display of current state."""
+        from pathlib import Path
+        from skills import StateSummarySkill
+
+        summary = StateSummarySkill().summarize(Path.cwd() / ".omp" / "state")
         print(f"📊 HUD — {self.name} v{self.version}")
         print()
         print("Current state:")
-        print("  Skills loaded: 28")
+        print("  Skills loaded: 34")
         print("  Agent catalog: 30 agents")
+        print(f"  State files: {summary.total_files}")
+        print(f"  Wait state: {summary.wait_state}")
+        print(f"  Notification channel: {summary.notification_channel}")
+        print(f"  Team controls: {', '.join(summary.team_controls) if summary.team_controls else 'none'}")
         print("  Status: operational")
         return 0
 
