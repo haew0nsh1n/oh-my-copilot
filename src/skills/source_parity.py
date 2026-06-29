@@ -49,8 +49,12 @@ class SourceParitySkill:
     name = "source_parity"
     description = "Compare OMC src implementation families with OMP translated source surfaces."
 
-    def audit(self, reference_src: str | Path | None = None) -> SourceParityReport:
-        """Create a source parity report, optionally checking a local OMC src directory."""
+    def audit(
+        self,
+        reference_src: str | Path | None = None,
+        workspace_root: str | Path | None = None,
+    ) -> SourceParityReport:
+        """Create a source parity report, optionally checking OMC and OMP source trees."""
         observed_counts: dict[str, int] = {}
         if reference_src is not None:
             observed_counts = count_reference_source_families(Path(reference_src))
@@ -59,4 +63,5 @@ class SourceParitySkill:
             reference="oh-my-claudecode/src",
             items=REFERENCE_SOURCE_FAMILIES,
             observed_reference_counts=observed_counts,
+            workspace_root=Path(workspace_root) if workspace_root is not None else Path.cwd(),
         )

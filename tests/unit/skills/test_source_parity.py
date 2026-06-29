@@ -23,6 +23,17 @@ def test_source_parity_matrix_covers_omc_runtime_source_families():
     assert statuses["mcp"] is SourceParityStatus.GAP
 
 
+def test_source_parity_verifies_current_omp_src_subdirectories():
+    """OMC source families map to existing OMP src implementation paths."""
+    report = SourceParitySkill().audit()
+
+    assert report.current_source_entries == ("cli", "core", "domain", "skills")
+    assert report.missing_omp_source_paths == {}
+    assert "mcp" in report.families_without_omp_source_paths
+    assert "openclaw" in report.families_without_omp_source_paths
+    assert "team" not in report.families_without_omp_source_paths
+
+
 def test_source_parity_can_compare_observed_reference_src_counts(tmp_path):
     """A local OMC src checkout can be checked for unknown or changed families."""
     reference_src = tmp_path / "src"
@@ -38,3 +49,12 @@ def test_source_parity_can_compare_observed_reference_src_counts(tmp_path):
     assert report.observed_reference_counts == {"agents": 1, "new-runtime": 1}
     assert report.unknown_reference_families == ("new-runtime",)
     assert report.changed_reference_counts["agents"] == (22, 1)
+
+
+def test_source_parity_reports_missing_omp_src_paths(tmp_path):
+    """Missing mapped OMP src paths are reported instead of silently passing."""
+    report = SourceParitySkill().audit(workspace_root=tmp_path)
+
+    assert report.current_source_entries == ()
+    assert "agents" in report.missing_omp_source_paths
+    assert "src/domain/agent_catalog.py" in report.missing_omp_source_paths["agents"]

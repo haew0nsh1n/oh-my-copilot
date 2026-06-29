@@ -99,6 +99,25 @@ def test_markdown_skill_bodies_describe_agent_usage_not_python_internals():
             assert fragment not in content, f"{skill_body} exposes {fragment!r}"
 
 
+def test_markdown_skill_bodies_are_substantial_omc_style_instructions():
+    """Root Markdown skill bodies contain OMC-style operating instructions."""
+    required_sections = (
+        "## When To Use",
+        "## Workflow",
+        "## Outputs",
+        "## OMP Mapping",
+        "## Guardrails",
+        "## Verification",
+    )
+
+    for skill_body in Path("skills").glob("*/SKILL.md"):
+        content = skill_body.read_text(encoding="utf-8")
+        line_count = len(content.splitlines())
+        assert line_count >= 32, f"{skill_body} is too shallow with {line_count} lines"
+        for section in required_sections:
+            assert section in content, f"{skill_body} is missing {section}"
+
+
 def test_omc_public_markdown_skill_surface_is_present():
     """Root skills include OMC-compatible public Markdown skill names."""
     local_skills = {

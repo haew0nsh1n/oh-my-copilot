@@ -1809,6 +1809,12 @@ class CLI:
                 family: {"expected": counts[0], "observed": counts[1]}
                 for family, counts in report.changed_reference_counts.items()
             },
+            "current_source_entries": list(report.current_source_entries),
+            "missing_omp_source_paths": {
+                family: list(paths)
+                for family, paths in report.missing_omp_source_paths.items()
+            },
+            "families_without_omp_source_paths": list(report.families_without_omp_source_paths),
         }
 
         if json_output:
@@ -1831,6 +1837,11 @@ class CLI:
             print("Changed reference counts:")
             for family, (expected, observed) in report.changed_reference_counts.items():
                 print(f"  {family}: expected {expected}, observed {observed}")
+        if report.missing_omp_source_paths:
+            print("Missing OMP source paths:")
+            for family, paths in report.missing_omp_source_paths.items():
+                print(f"  {family}: {', '.join(paths)}")
+        print("Current OMP src entries:", ", ".join(report.current_source_entries) if report.current_source_entries else "none")
         return 0
 
     def _help_command(self, args: list[str] = None) -> int:

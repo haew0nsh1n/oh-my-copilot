@@ -57,6 +57,26 @@ def test_root_agents_include_omc_public_agents():
         assert "description:" in content, agent_name
 
 
+def test_root_agents_are_substantial_omc_style_prompts():
+    """Root agents include OMC-style role, workflow, output, and verification guidance."""
+    required_sections = (
+        "## Role",
+        "## When To Use",
+        "## Operating Workflow",
+        "## Expected Outputs",
+        "## OMP Guardrails",
+        "## Verification",
+    )
+
+    for agent_name in OMC_AGENT_NAMES:
+        path = Path("agents") / f"{agent_name}.md"
+        content = path.read_text(encoding="utf-8")
+        line_count = len(content.splitlines())
+        assert line_count >= 48, f"{path} is too shallow with {line_count} lines"
+        for section in required_sections:
+            assert section in content, f"{path} is missing {section}"
+
+
 def test_hook_and_template_surfaces_exist():
     """Root hooks and hook templates provide OMC-compatible lifecycle surfaces."""
     hooks_config = Path("hooks/hooks.json")

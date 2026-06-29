@@ -133,6 +133,8 @@ class TestCLICommands:
         assert output["reference"] == "oh-my-claudecode/src"
         assert output["total_reference_files"] == 523
         assert "mcp" in output["gaps"]
+        assert output["current_source_entries"] == ["cli", "core", "domain", "skills"]
+        assert output["missing_omp_source_paths"] == {}
         assert any(item["family"] == "team" for item in output["families"])
 
 

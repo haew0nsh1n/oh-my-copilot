@@ -60,6 +60,24 @@ def test_omc_public_commands_dispatch_to_matching_skills():
         assert "$ARGUMENTS" in content, command_name
 
 
+def test_omc_public_commands_are_substantial_lightweight_wrappers():
+    """Command wrappers include OMC-style dispatch context without duplicating skill bodies."""
+    required_sections = (
+        "## Purpose",
+        "## Dispatch",
+        "## Arguments",
+        "## Verification",
+    )
+
+    for command_name in OMC_PUBLIC_COMMANDS:
+        command_file = Path("commands") / f"{command_name}.md"
+        content = command_file.read_text(encoding="utf-8")
+        line_count = len(content.splitlines())
+        assert line_count >= 22, f"{command_file} is too shallow with {line_count} lines"
+        for section in required_sections:
+            assert section in content, f"{command_file} is missing {section}"
+
+
 def test_root_commands_are_included_in_source_distribution():
     """Root command Markdown bodies are included in source distributions."""
     manifest = Path("MANIFEST.in")
