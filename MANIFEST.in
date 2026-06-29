@@ -1,1 +1,2 @@
 recursive-include skills SKILL.md
+recursive-include commands *.md

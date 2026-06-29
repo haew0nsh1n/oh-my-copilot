@@ -330,6 +330,8 @@ repo = github.create_repository(
   - `cli/` - 명령어 인터페이스
 - `skills/` - oh-my-claudecode 방식의 Markdown skill bodies
     - `skills/<name>/SKILL.md` - OMC-style product skill body
+- `commands/` - oh-my-claudecode 방식의 lightweight slash command wrappers
+    - `commands/<name>.md` - root skill body로 dispatch하는 command body
 - `tests/` - TDD 기반 테스트
   - `unit/skills/` - 각 스킬 테스트
   - `unit/cli/` - CLI 테스트
@@ -338,7 +340,7 @@ repo = github.create_repository(
 
 ## 📚 Skills
 
-34가지 Python product skill과 64개의 루트 Markdown skill body가 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
+34가지 Python product skill, 64개의 루트 Markdown skill body, 28개의 OMC-style command body가 구현되어 있습니다 (oh-my-claudecode parity 진행 중):
 
 각 스킬은 Python API와 Markdown skill body를 함께 가집니다. Python API는 `from skills import ...`로
 직접 사용할 수 있는 제품 인터페이스이고, `skills/<name>/SKILL.md`는 oh-my-claudecode의
@@ -347,6 +349,9 @@ repo = github.create_repository(
 
 루트 Markdown skill body는 oh-my-copilot 고유 product skill과 oh-my-claudecode 공개 skill surface의
 호환 body를 함께 포함합니다.
+
+`commands/<name>.md`는 OMC처럼 긴 skill instructions를 매번 로드하지 않고 대응하는
+`skills/<name>/SKILL.md`로 dispatch하는 lightweight wrapper입니다.
 
 ### Phase 1: 기본 스킬 (5개)
 
