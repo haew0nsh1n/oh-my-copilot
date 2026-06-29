@@ -72,12 +72,30 @@ class TestCLICommands:
         cli = CLI()
         result = cli.run(["help"])
         assert result == 0
+
+    def test_global_help_options(self, capsys):
+        """OMC-compatible global help options return help."""
+        cli = CLI()
+
+        assert cli.run(["--help"]) == 0
+        assert cli.run(["-h"]) == 0
+        output = capsys.readouterr().out
+        assert "oh-my-copilot" in output
     
     def test_version_command(self):
         """RED: Version command returns 0."""
         cli = CLI()
         result = cli.run(["version"])
         assert result == 0
+
+    def test_global_version_options(self, capsys):
+        """OMC-compatible global version options return version."""
+        cli = CLI()
+
+        assert cli.run(["--version"]) == 0
+        assert cli.run(["-V"]) == 0
+        output = capsys.readouterr().out
+        assert "0.1.0" in output
     
     def test_brainstorm_command(self):
         """RED: Brainstorm command works."""

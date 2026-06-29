@@ -7,4 +7,3 @@ description: Use when registering, executing, or reporting lifecycle hook handle
 
 Manage lifecycle hook registries, handler ordering, and execution reports.
 
-Python implementation: `src/skills/hooks.py`.

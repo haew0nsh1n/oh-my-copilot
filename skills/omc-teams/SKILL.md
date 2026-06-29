@@ -9,4 +9,3 @@ Prepare provider-backed team requests, readiness checks, and control artifacts.
 
 OMP CLI: `omp team`.
 
-Python implementation: `src/skills/team_runtime.py`.

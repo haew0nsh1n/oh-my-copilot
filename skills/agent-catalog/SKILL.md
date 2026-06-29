@@ -7,6 +7,5 @@ description: Use when listing, selecting, or invoking oh-my-copilot specialist a
 
 Expose the product agent catalog through a stable skill body.
 
-Python implementation: `src/skills/agent_catalog.py`.
 
 Use this skill to list available agents, select agents by category, or record agent invocation metadata.

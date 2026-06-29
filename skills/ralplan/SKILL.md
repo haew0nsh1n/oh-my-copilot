@@ -7,4 +7,3 @@ description: Use when building architecture plans with architect and critic appr
 
 Create plans, add decisions, record reviews, and generate approval reports.
 
-Python implementation: `src/skills/ralplan.py`.

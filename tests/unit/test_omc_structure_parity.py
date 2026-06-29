@@ -28,6 +28,23 @@ OMC_AGENT_NAMES = {
     "writer",
 }
 
+OMC_WORKFLOW_FILES = {
+    "auto-label.yml",
+    "ci.yml",
+    "cleanup.yml",
+    "pr-check.yml",
+    "release.yml",
+    "stale.yml",
+    "upgrade-test.yml",
+}
+
+OMC_SOURCE_CLEANUP_PLAN_FILES = {
+    "fallback-classification-inventory.md",
+    "first-safe-cleanup-batch.md",
+    "generated-artifact-policy.md",
+    "ownership-matrix.md",
+}
+
 
 def test_root_agents_include_omc_public_agents():
     """Root agents mirror OMC's public agent prompt surface."""
@@ -113,3 +130,36 @@ def test_mission_surfaces_exist():
         assert sandbox.exists(), mission_root.name
         assert mission.read_text(encoding="utf-8").startswith("# Mission")
         assert sandbox.read_text(encoding="utf-8").startswith("# Sandbox")
+
+
+def test_github_workflows_mirror_omc_ci_surface():
+    """GitHub workflows provide OMC-compatible CI, PR, release, cleanup, and upgrade surfaces."""
+    workflow_root = Path(".github/workflows")
+    local_workflows = {path.name for path in workflow_root.glob("*.yml")}
+
+    assert OMC_WORKFLOW_FILES <= local_workflows
+
+    ci = (workflow_root / "ci.yml").read_text(encoding="utf-8")
+    assert "omp doctor --strict" in ci
+    assert ".venv/bin/python -m pytest -q" in ci
+
+    release = (workflow_root / "release.yml").read_text(encoding="utf-8")
+    assert "omp doctor --strict" in release
+    assert "MANIFEST.in" in release
+
+    cleanup = (workflow_root / "cleanup.yml").read_text(encoding="utf-8")
+    assert "retention-days" in cleanup
+
+
+def test_source_overall_cleanup_plan_surface_exists():
+    """OMP source-overall-cleanup readiness artifacts exist under .omp/plans."""
+    assert not Path(".omx").exists()
+
+    plan_root = Path(".omp/plans/source-overall-cleanup")
+    local_files = {path.name for path in plan_root.glob("*.md")}
+
+    assert OMC_SOURCE_CLEANUP_PLAN_FILES <= local_files
+    for file_name in OMC_SOURCE_CLEANUP_PLAN_FILES:
+        content = (plan_root / file_name).read_text(encoding="utf-8")
+        assert content.startswith("# ")
+        assert "OMP" in content or "oh-my-copilot" in content

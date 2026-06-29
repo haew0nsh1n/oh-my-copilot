@@ -7,4 +7,3 @@ description: Use when planning maximum-parallel execution lanes and aggregating 
 
 Create parallel execution sessions, lanes, and aggregate completion reports.
 
-Python implementation: `src/skills/ultrawork.py`.

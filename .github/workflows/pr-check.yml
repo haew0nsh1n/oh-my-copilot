@@ -1,0 +1,29 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  size-and-surface-check:
+    name: Size and OMP Surface Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check changed file count
+        run: |
+          changed=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD | wc -l)
+          echo "changed_files=$changed"
+      - name: Check required parity surfaces
+        run: |
+          test -d skills
+          test -d commands
+          test -d agents
+          test -f MANIFEST.in

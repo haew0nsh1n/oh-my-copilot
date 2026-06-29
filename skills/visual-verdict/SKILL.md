@@ -7,4 +7,3 @@ description: Use when recording visual QA checks, scores, and pass or fail verdi
 
 Create visual verdict sessions, add checks, and generate visual QA reports.
 
-Python implementation: `src/skills/visual_verdict.py`.

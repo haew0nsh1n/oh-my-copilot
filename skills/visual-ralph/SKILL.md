@@ -7,4 +7,3 @@ description: Use when running visual implementation loops against references and
 
 Track visual implementation goals, reference assets, attempts, and completion reports.
 
-Python implementation: `src/skills/visual_ralph.py`.

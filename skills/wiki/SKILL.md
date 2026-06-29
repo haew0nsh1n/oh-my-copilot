@@ -7,4 +7,3 @@ description: Use when managing project knowledge pages, indexes, tags, and publi
 
 Create wiki pages, maintain an index, search pages, and archive knowledge artifacts.
 
-Python implementation: `src/skills/wiki.py`.

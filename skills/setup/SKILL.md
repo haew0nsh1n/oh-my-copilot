@@ -9,4 +9,3 @@ Initialize `.omp` local state and verify setup health.
 
 OMP CLI: `omp setup`.
 
-Python implementation: `src/skills/project_setup.py`.

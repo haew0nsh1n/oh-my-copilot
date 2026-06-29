@@ -19,6 +19,8 @@ temp/
 .omp/*
 !.omp/skills/
 !.omp/skills/**
+!.omp/plans/
+!.omp/plans/**
 
 # Environment and secrets
 .env

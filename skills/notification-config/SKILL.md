@@ -7,4 +7,3 @@ description: Use when preparing and persisting stop callback notification settin
 
 Prepare notification callback configuration and persist local state.
 
-Python implementation: `src/skills/notification_config.py`.

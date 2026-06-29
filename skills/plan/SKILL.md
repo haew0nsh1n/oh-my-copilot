@@ -9,4 +9,3 @@ Create high-level plans and execution objectives.
 
 OMP CLI: `omp plan`.
 
-Python implementation: `src/skills/strategic_plan.py`.

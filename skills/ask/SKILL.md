@@ -9,4 +9,3 @@ Prepare, check, execute, and record provider advisor requests.
 
 OMP CLI: `omp ask <provider> <prompt>` and `omp ask --execute <provider> <prompt>`.
 
-Python implementation: `src/skills/provider_advisor.py`.

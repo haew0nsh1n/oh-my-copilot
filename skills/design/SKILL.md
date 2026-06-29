@@ -7,4 +7,3 @@ description: Use when recording design sessions, options, decisions, and selecte
 
 Capture design alternatives and decisions for product changes.
 
-Python implementation: `src/skills/design.py`.

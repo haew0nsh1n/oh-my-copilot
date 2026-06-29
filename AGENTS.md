@@ -1,4 +1,4 @@
-<!-- OMX:AGENTS:START -->
+<!-- OMP:AGENTS:START -->
 
 # oh-my-copilot Agent Configuration
 
@@ -216,5 +216,5 @@ pytest tests/                         # 전체 테스트
 - 도메인 규칙이 CLI나 테스트 fixture에만 숨어 있지 않은가?
 - public API 변경이면 README, BRIEF, 테스트가 함께 갱신되었는가?
 
-<!-- OMX:AGENTS:END -->
+<!-- OMP:AGENTS:END -->
 

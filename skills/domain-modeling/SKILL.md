@@ -7,4 +7,3 @@ description: Use when defining domain concepts, ubiquitous language, relationshi
 
 Create domain models, add concepts, connect relationships, and validate glossary consistency.
 
-Python implementation: `src/skills/domain_modeling.py`.

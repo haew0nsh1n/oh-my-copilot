@@ -7,4 +7,3 @@ description: Use when summarizing sanitized local session friction and context-b
 
 Generate local friction reports from sanitized `.omp/sessions` metadata.
 
-Python implementation: `src/skills/session_friction.py`.

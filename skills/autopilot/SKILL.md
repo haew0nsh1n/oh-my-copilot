@@ -7,6 +7,5 @@ description: Use when running the canonical interview to plan to execute to revi
 
 Run the canonical workflow as a state-backed OMP execution mode.
 
-Python implementation: `src/skills/autopilot.py`.
 
 Use this skill to coordinate `interview`, `ralplan`, `ultragoal`, `review`, and `ultraqa` progress.

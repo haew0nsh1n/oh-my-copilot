@@ -7,4 +7,3 @@ description: Use when diagnosing failures with evidence, hypotheses, and root-ca
 
 Create diagnostic sessions, add evidence, rank hypotheses, and produce reports.
 
-Python implementation: `src/skills/diagnostics.py`.

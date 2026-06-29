@@ -7,4 +7,3 @@ description: Use when planning token-efficient routing across model tiers and ta
 
 Create model-routing sessions and estimate efficient execution lanes.
 
-Python implementation: `src/skills/ecomode.py`.

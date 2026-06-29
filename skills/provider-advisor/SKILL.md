@@ -7,4 +7,3 @@ description: Use when preparing, checking, executing, or recording provider advi
 
 Coordinate provider checks and ask artifacts for Claude, Codex, Gemini, Antigravity, Grok, and Cursor.
 
-Python implementation: `src/skills/provider_advisor.py`.

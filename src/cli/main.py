@@ -114,8 +114,7 @@ class CLI:
             "note": self._note_command,
             "trace": self._trace_command,
             "hud": self._hud_command,
-            "setup": self._omx_setup_command,
-            "omx-setup": self._omx_setup_command,
+            "setup": self._omp_setup_command,
             "configure-notifications": self._configure_notifications_command,
             "ralph-init": self._ralph_init_command,
             "agents": self._agents_command,
@@ -129,6 +128,12 @@ class CLI:
             return self._help_command()
 
         command = args[0]
+
+        if command in {"--help", "-h"}:
+            return self._help_command()
+
+        if command in {"--version", "-V"}:
+            return self._version_command()
 
         if command not in self.commands:
             print(f"Error: Unknown command '{command}'")
@@ -356,7 +361,7 @@ class CLI:
 
     def _install_command(self, args: list[str]) -> int:
         """Install/sync OMP local state."""
-        setup_result = self._omx_setup_command([])
+        setup_result = self._omp_setup_command([])
         path = self._write_json_state("install", {"status": "completed", "args": args})
         print(f"   Install state: {path}")
         return setup_result
@@ -1737,8 +1742,8 @@ class CLI:
         print("  Status: operational")
         return 0
 
-    def _omx_setup_command(self, args: list[str] = None) -> int:
-        """$omx-setup — initial project setup."""
+    def _omp_setup_command(self, args: list[str] = None) -> int:
+        """$omp setup — initial project setup."""
         from pathlib import Path
         from skills import ProjectSetupSkill
 

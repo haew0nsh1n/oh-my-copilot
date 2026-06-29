@@ -7,4 +7,3 @@ description: Use when modeling shell command execution, safety validation, and c
 
 Create command sessions, validate command safety, and produce execution reports.
 
-Python implementation: `src/skills/sparkshell.py`.

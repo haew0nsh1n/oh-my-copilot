@@ -9,4 +9,3 @@ Initialize local `.omp` state directories and setup artifacts.
 
 OMP CLI: `omp setup` and `omp install`.
 
-Python implementation: `src/skills/project_setup.py`.

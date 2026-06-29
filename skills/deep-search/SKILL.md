@@ -7,4 +7,3 @@ description: Use when creating codebase search sessions and recording relevant s
 
 Track scoped codebase searches, ranked results, and summaries.
 
-Python implementation: `src/skills/deep_search.py`.

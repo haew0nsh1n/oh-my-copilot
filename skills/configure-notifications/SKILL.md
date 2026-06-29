@@ -9,4 +9,3 @@ Prepare notification callback settings for local OMP state.
 
 OMP CLI: `omp config-stop-callback` and `omp config-notify-profile`.
 
-Python implementation: `src/skills/notification_config.py`.

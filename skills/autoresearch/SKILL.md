@@ -7,4 +7,3 @@ description: Use when running bounded research with evidence collection and vali
 
 Create research tasks, collect evidence, and validate whether a research target is complete.
 
-Python implementation: `src/skills/autoresearch.py`.

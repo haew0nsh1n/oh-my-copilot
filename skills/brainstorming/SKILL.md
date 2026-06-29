@@ -7,4 +7,3 @@ description: Use when generating and selecting implementation ideas before plann
 
 Create brainstorming sessions, add ideas, and select promising outcomes.
 
-Python implementation: `src/skills/brainstorming.py`.

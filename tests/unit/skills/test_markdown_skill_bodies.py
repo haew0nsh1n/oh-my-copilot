@@ -85,6 +85,20 @@ def test_markdown_skill_bodies_are_included_in_source_distribution():
     assert "recursive-include skills SKILL.md" in manifest.read_text(encoding="utf-8")
 
 
+def test_markdown_skill_bodies_describe_agent_usage_not_python_internals():
+    """Root Markdown skill bodies describe usage instead of linking to product internals."""
+    forbidden_fragments = (
+        "Python implementation:",
+        "src/skills/",
+        "src.skills",
+    )
+
+    for skill_body in Path("skills").glob("*/SKILL.md"):
+        content = skill_body.read_text(encoding="utf-8")
+        for fragment in forbidden_fragments:
+            assert fragment not in content, f"{skill_body} exposes {fragment!r}"
+
+
 def test_omc_public_markdown_skill_surface_is_present():
     """Root skills include OMC-compatible public Markdown skill names."""
     local_skills = {

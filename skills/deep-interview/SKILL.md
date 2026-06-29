@@ -7,4 +7,3 @@ description: Use when clarifying requirements, assumptions, goals, and open ques
 
 Run requirement clarification through questions, answers, and interview reports.
 
-Python implementation: `src/skills/deep_interview.py`.

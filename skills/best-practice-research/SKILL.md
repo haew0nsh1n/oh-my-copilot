@@ -7,4 +7,3 @@ description: Use when collecting official or upstream best-practice evidence bef
 
 Capture best practices, evidence sources, impact, and adoption guidance.
 
-Python implementation: `src/skills/best_practice_research.py`.

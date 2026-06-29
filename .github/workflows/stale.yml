@@ -1,0 +1,18 @@
+name: Stale
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark Stale Work
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stale policy placeholder
+        run: echo 'Stale policy is documented for OMP parity; enable actions/stale when project policy is finalized.'

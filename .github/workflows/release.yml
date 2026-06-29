@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release-check:
+    name: Release Readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+      - name: Verify manifest includes parity surfaces
+        run: |
+          grep 'recursive-include skills SKILL.md' MANIFEST.in
+          grep 'recursive-include commands *.md' MANIFEST.in
+      - name: Run strict doctor
+        run: omp doctor --strict
+      - name: Run full tests
+        run: python -m pytest -q
