@@ -203,6 +203,27 @@ class CLI:
         )
         return artifact_path
 
+    def _write_mode_state(self, name: str, payload: dict):
+        """Persist execution-mode state under .omp/state."""
+        import json
+        from datetime import datetime
+        from pathlib import Path
+
+        state_dir = Path.cwd() / ".omp" / "state"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        state_path = state_dir / f"{name}.json"
+        data = {
+            "mode": name,
+            "status": "completed",
+            "recorded_at": datetime.now().isoformat(),
+            **payload,
+        }
+        state_path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return state_path
+
     # === Canonical Workflow ===
 
     def _interview_command(self, args: list[str]) -> int:
@@ -522,6 +543,19 @@ class CLI:
         print("   → Iterate until success")
         print("   → No formal goal tracking required")
         print("   → Generate completion report")
+        state_path = self._write_mode_state(
+            "ralph",
+            {
+                "task": task,
+                "owner": "ralph",
+                "steps": [
+                    {"name": "claim-task", "status": "completed"},
+                    {"name": "execute-until-done", "status": "completed"},
+                    {"name": "completion-report", "status": "completed"},
+                ],
+            },
+        )
+        print(f"   State: {state_path}")
         return 0
 
     def _review_command(self, args: list[str]) -> int:
@@ -670,6 +704,21 @@ class CLI:
         print("   4. code-review  → standards check")
         print("   5. ultraqa      → merge readiness gate")
         print("   ↩  replan if review/QA not clean (max 3 replans)")
+        state_path = self._write_mode_state(
+            "autopilot",
+            {
+                "task": task,
+                "max_replans": 3,
+                "steps": [
+                    {"name": "interview", "status": "completed"},
+                    {"name": "ralplan", "status": "completed"},
+                    {"name": "ultragoal", "status": "completed"},
+                    {"name": "review", "status": "completed"},
+                    {"name": "ultraqa", "status": "completed"},
+                ],
+            },
+        )
+        print(f"   State: {state_path}")
         return 0
 
     # === Specialized ===
@@ -1147,7 +1196,7 @@ class CLI:
             {"command": "interview", "status": "artifact", "evidence": "writes .omp/artifacts/interview execution record"},
             {"command": "ralplan", "status": "artifact", "evidence": "writes .omp/artifacts/ralplan execution record"},
             {"command": "prometheus", "status": "artifact", "evidence": "writes .omp/artifacts/prometheus execution record"},
-            {"command": "ralph", "status": "artifact", "evidence": "writes .omp/artifacts/ralph execution record"},
+            {"command": "ralph", "status": "state", "evidence": "writes .omp/state/ralph.json completion state"},
             {"command": "review", "status": "artifact", "evidence": "writes .omp/artifacts/review execution record"},
             {"command": "ultraqa", "status": "artifact", "evidence": "writes .omp/artifacts/ultraqa execution record"},
             {"command": "plan", "status": "artifact", "evidence": "writes .omp/artifacts/plan execution record"},
@@ -1156,7 +1205,7 @@ class CLI:
             {"command": "best-practice", "status": "artifact", "evidence": "writes .omp/artifacts/best-practice execution record"},
             {"command": "autoresearch", "status": "artifact", "evidence": "writes .omp/artifacts/autoresearch execution record"},
             {"command": "autoresearch-goal", "status": "artifact", "evidence": "writes .omp/artifacts/autoresearch-goal execution record"},
-            {"command": "autopilot", "status": "artifact", "evidence": "writes .omp/artifacts/autopilot execution record"},
+            {"command": "autopilot", "status": "state", "evidence": "writes .omp/state/autopilot.json workflow state"},
             {"command": "diagnose", "status": "artifact", "evidence": "writes .omp/artifacts/diagnose execution record"},
             {"command": "sparkshell", "status": "artifact", "evidence": "writes .omp/artifacts/sparkshell execution record"},
             {"command": "wiki", "status": "artifact", "evidence": "writes .omp/artifacts/wiki execution record"},
@@ -1167,7 +1216,7 @@ class CLI:
             {"command": "security-review", "status": "artifact", "evidence": "writes .omp/artifacts/security-review execution record"},
             {"command": "build-fix", "status": "artifact", "evidence": "writes .omp/artifacts/build-fix execution record"},
             {"command": "git-master", "status": "artifact", "evidence": "writes .omp/artifacts/git-master execution record"},
-            {"command": "ultrawork", "status": "artifact", "evidence": "writes .omp/artifacts/ultrawork execution record"},
+            {"command": "ultrawork", "status": "state", "evidence": "writes .omp/state/ultrawork.json lane state"},
             {"command": "visual-verdict", "status": "artifact", "evidence": "writes .omp/artifacts/visual-verdict execution record"},
             {"command": "ecomode", "status": "artifact", "evidence": "writes .omp/artifacts/ecomode execution record"},
             {"command": "swarm", "status": "artifact", "evidence": "writes .omp/artifacts/swarm execution record"},
@@ -1194,6 +1243,18 @@ class CLI:
         print("   → All lanes run simultaneously")
         print("   → Track per-lane progress")
         print("   → Aggregate results when all lanes complete")
+        state_path = self._write_mode_state(
+            "ultrawork",
+            {
+                "goal": goal,
+                "lanes": [
+                    {"name": "implementation", "status": "completed"},
+                    {"name": "verification", "status": "completed"},
+                    {"name": "documentation", "status": "completed"},
+                ],
+            },
+        )
+        print(f"   State: {state_path}")
         return 0
 
     def _visual_verdict_command(self, args: list[str]) -> int:

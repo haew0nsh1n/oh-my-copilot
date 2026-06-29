@@ -86,6 +86,11 @@ omp ultraqa "인증 기능 QA"
 
 # ── 완전 자동 모드 ──
 omp autopilot "OAuth2 인증 end-to-end 구현"
+omp ralph "인증 기능 완료까지 반복"
+omp ultrawork "테스트 실패를 병렬로 해결"
+
+`ralph`, `autopilot`, `ultrawork`는 실행 후 `.omp/state/ralph.json`,
+`.omp/state/autopilot.json`, `.omp/state/ultrawork.json`에 완료 상태와 단계/lane 기록을 남깁니다.
 
 # ── 기타 스킬 ──
 # 브레인스토밍

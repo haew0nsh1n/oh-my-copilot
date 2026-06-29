@@ -225,10 +225,18 @@ class TestCanonicalWorkflowCommands:
         assert "auth-review" in output
         assert "Saved:" in output
 
-    def test_ralph_command(self):
+    def test_ralph_command(self, tmp_path, monkeypatch):
         """ralph command works."""
+        monkeypatch.chdir(tmp_path)
+
         cli = CLI()
         assert cli.run(["ralph", "complete the feature"]) == 0
+
+        state_path = tmp_path / ".omp" / "state" / "ralph.json"
+        assert state_path.exists()
+        state = json.loads(state_path.read_text())
+        assert state["status"] == "completed"
+        assert state["steps"][-1]["name"] == "completion-report"
 
     def test_code_review_alias(self):
         """code-review alias works."""
@@ -282,10 +290,33 @@ class TestResearchCLICommands:
 class TestExecutionModeCLICommands:
     """Test execution mode CLI commands."""
 
-    def test_autopilot_command(self):
-        """autopilot command works."""
+    def test_autopilot_command_writes_state(self, tmp_path, monkeypatch):
+        """autopilot writes a completed workflow state artifact."""
+        monkeypatch.chdir(tmp_path)
+
         cli = CLI()
         assert cli.run(["autopilot", "implement auth end-to-end"]) == 0
+
+        state = json.loads((tmp_path / ".omp" / "state" / "autopilot.json").read_text())
+        assert state["status"] == "completed"
+        assert [step["name"] for step in state["steps"]] == [
+            "interview",
+            "ralplan",
+            "ultragoal",
+            "review",
+            "ultraqa",
+        ]
+
+    def test_ultrawork_command_writes_lane_state(self, tmp_path, monkeypatch):
+        """ultrawork writes parallel lane state."""
+        monkeypatch.chdir(tmp_path)
+
+        cli = CLI()
+        assert cli.run(["ultrawork", "fix all errors"]) == 0
+
+        state = json.loads((tmp_path / ".omp" / "state" / "ultrawork.json").read_text())
+        assert state["status"] == "completed"
+        assert [lane["name"] for lane in state["lanes"]] == ["implementation", "verification", "documentation"]
 
 
 class TestSpecializedCLICommands:
