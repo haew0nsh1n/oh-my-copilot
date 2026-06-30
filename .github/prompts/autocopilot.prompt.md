@@ -72,6 +72,39 @@ Continue through adjacent parity gaps in the requested scope. Do not stop at a p
 
 For Copilot-native execution, repeat until all requested checks are green: inspect bridge state, run the narrow failing command/test, repair locally, then rerun `omp bridge status --json`, `omp doctor --strict`, and the relevant VS Code task or pytest command.
 
+## Full-Surface Audit Manifest
+
+Do not stop after a single green test, a single CLI smoke, or one implemented slice. For OMC parity work, an autopilot run must inspect every public surface in the requested scope and keep looping until each surface is either implemented, adapted, explicitly partial, or documented as a gap with evidence.
+
+Surface parity is not filename parity. When OMP adds a file that corresponds to an OMC file, compare the OMC implementation method as well: section structure, ownership model, state path semantics, command behavior, stop rules, verification commands, and generated-artifact policy. If OMP intentionally adapts the implementation, document the translation and lock it with tests.
+
+Use this manifest as the default full-pass checklist:
+
+- `src/` Python implementation: domain models, skills, CLI adapters, and core runtime helpers.
+- `skills/`: root OMC-style `SKILL.md` bodies with substantial operating instructions.
+- `commands/`: root OMC-style lightweight command wrappers that dispatch to matching skills.
+- `agents/`: root OMC-style agent prompts with role, workflow, output, guardrail, and verification sections.
+- `hooks/` and `templates/hooks/`: lifecycle hook surfaces and OMP translation templates.
+- `bridge/`: OMP bridge script and `.omp` state/artifact inspection surfaces.
+- `benchmark/` and `benchmarks/`: deterministic compatibility smoke surfaces.
+- `missions/`: mission/sandbox surfaces that explain parity work and validation.
+- `.github/workflows/`, `.github/instructions/`, `.github/prompts/`, and `.vscode/tasks.json`.
+- `README.md`, `AGENTS.md`, `BRIEF.md`, `CONTEXT.md`, and relevant ADRs.
+- `.omp/plans/source-overall-cleanup/*.md`: OMC cleanup-plan method, lane model, section shape, and verification procedure translated from `.omx` to `.omp`.
+
+Minimum full-surface commands for parity work:
+
+```bash
+.venv/bin/python -m cli source-parity --json
+.venv/bin/python -m cli doctor --strict
+.venv/bin/python -m cli skills
+.venv/bin/python -m cli agents
+.venv/bin/python -m pytest tests/unit/skills/test_markdown_skill_bodies.py tests/unit/skills/test_markdown_commands.py tests/unit/test_omc_structure_parity.py -q
+.venv/bin/python -m pytest -q
+```
+
+When a check fails, repair the smallest local slice and rerun the same check. After it passes, rerun the manifest item that originally exposed the gap. Only move to the next surface after the current surface has evidence.
+
 ## Architecture Rules
 
 Respect the existing layering:
@@ -105,6 +138,7 @@ A run is complete only when all of these are true:
 - Narrow tests for touched areas pass.
 - The full test suite passes, or any failure is clearly unrelated and documented.
 - A CLI smoke check proves the user-facing workflow still runs.
+- The Full-Surface Audit Manifest has been run for the requested scope, or each skipped item is named with a blocker and next action.
 - The final response lists changed files and exact validation commands/results.
 
 If blocked, stop only after documenting the blocker, the evidence gathered, and the next concrete action.

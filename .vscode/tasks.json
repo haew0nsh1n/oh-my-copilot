@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "omp: doctor strict",
+      "type": "shell",
+      "command": "source .env && omp doctor --strict",
+      "problemMatcher": []
+    },
+    {
+      "label": "omp: pytest",
+      "type": "shell",
+      "command": ".venv/bin/python -m pytest -q",
+      "problemMatcher": []
+    },
+    {
+      "label": "omp: hud",
+      "type": "shell",
+      "command": "source .env && omp hud",
+      "problemMatcher": []
+    },
+    {
+      "label": "omp: bridge status",
+      "type": "shell",
+      "command": "source .env && omp bridge status --json",
+      "problemMatcher": []
+    },
+    {
+      "label": "omp: ultragoal status",
+      "type": "shell",
+      "command": "source .env && omp ultragoal status",
+      "problemMatcher": []
+    },
+    {
+      "label": "omp: e2e runtime parity",
+      "type": "shell",
+      "command": ".venv/bin/python -m pytest tests/e2e/test_runtime_parity.py -q",
+      "problemMatcher": []
+    },
+    {
+      "label": "omp: source parity",
+      "type": "shell",
+      "command": ".venv/bin/python -m cli source-parity --json",
+      "problemMatcher": []
+    }
+  ]
+}

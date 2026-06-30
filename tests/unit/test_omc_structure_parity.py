@@ -45,6 +45,37 @@ OMC_SOURCE_CLEANUP_PLAN_FILES = {
     "ownership-matrix.md",
 }
 
+OMC_SOURCE_CLEANUP_REQUIRED_SECTIONS = {
+    "fallback-classification-inventory.md": {
+        "## Inputs and method",
+        "## Classification legend",
+        "## High-priority inventory",
+        "## Required test-locks before Lane 2 edits",
+        "## Lane ownership / handoff notes",
+    },
+    "first-safe-cleanup-batch.md": {
+        "## Scope and stop rule",
+        "## Batch objective",
+        "## Target file ownership for this batch",
+        "## Existing behavior locks to run before editing",
+        "## Verification commands after edits",
+    },
+    "generated-artifact-policy.md": {
+        "## Scope and source anchors",
+        "## Package/build evidence",
+        "## Decision",
+        "## Artifact classes and required action",
+        "## Final verification procedure",
+    },
+    "ownership-matrix.md": {
+        "## Rules",
+        "## Lane 0 — Baseline / inventory lock",
+        "## Lane 1 — Test contract hardening",
+        "## Lane 2 — Fallback / state-contract cleanup",
+        "## Hand-off rule",
+    },
+}
+
 
 def test_root_agents_include_omc_public_agents():
     """Root agents mirror OMC's public agent prompt surface."""
@@ -183,3 +214,6 @@ def test_source_overall_cleanup_plan_surface_exists():
         content = (plan_root / file_name).read_text(encoding="utf-8")
         assert content.startswith("# ")
         assert "OMP" in content or "oh-my-copilot" in content
+        assert len(content.splitlines()) >= 70, file_name
+        for section in OMC_SOURCE_CLEANUP_REQUIRED_SECTIONS[file_name]:
+            assert section in content, f"{file_name} missing {section}"

@@ -7,6 +7,11 @@ applyTo:
   - "BRIEF.md"
   - "CONTEXT.md"
   - "docs/**/*.md"
+  - ".github/prompts/**/*.md"
+  - ".github/instructions/**/*.md"
+  - "agents/**/*.md"
+  - "commands/**/*.md"
+  - "skills/**/*.md"
 ---
 
 # Matt Pocock Harness Engineering
@@ -44,3 +49,5 @@ Before declaring work complete, run the narrowest meaningful validation first, t
 2. Relevant `omp ...` smoke command.
 3. `omp doctor --strict` when CLI surface or skill availability changed.
 4. Full `.venv/bin/python -m pytest -q` when shared contracts changed.
+
+For autopilot/parity work, do not stop after a single passing test or a successful smoke command. First run the full-surface audit gates named in `AGENTS.md` and `.github/prompts/autocopilot.prompt.md`, including `python -m cli source-parity --json`, strict doctor, focused tests for changed surfaces, and the full test suite when public contracts changed.

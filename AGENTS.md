@@ -79,6 +79,41 @@ interview -> ralplan -> prometheus -> ultragoal -> review -> ultraqa
 작업 완료를 선언하려면 최소 하나 이상의 실행 가능한 검증 증거가 있어야 합니다. 전체 테스트가 가능한 환경이면
 `uv run pytest`를 우선 사용합니다.
 
+### Full-Surface Audit Manifest
+
+`autopilot` 또는 `/autocopilot`으로 OMC parity를 진행할 때는 단일 smoke check나 단일 테스트 통과만으로 종료하지 않습니다.
+요청 범위가 명시적으로 더 좁지 않다면 다음 surface 전체를 확인하고, 각 항목을 `implemented`, `adapted`,
+`partial`, `gap` 중 하나로 분류한 뒤 증거를 남깁니다.
+
+파일 이름이 같다는 사실만으로 parity를 선언하지 않습니다. OMC 대응 파일이 있으면 구현 방식도 비교합니다:
+섹션 구조, 상태 경로 의미, 명령 동작, lane ownership, stop rule, 검증 명령, generated-artifact 정책을 확인하고,
+OMP에서 의도적으로 다르게 번역한 경우 그 이유와 테스트를 남깁니다.
+
+- `src/`: domain, skills, CLI, core 구현 및 `source-parity` 결과
+- `skills/`: 루트 OMC-style `SKILL.md` 본문 깊이와 dispatch 가능성
+- `commands/`: 루트 lightweight command wrapper와 대상 skill 연결
+- `agents/`: 루트 agent prompt 역할/워크플로우/검증 섹션
+- `hooks/`, `templates/hooks/`: lifecycle hook surface와 OMP 번역 템플릿
+- `bridge/`: `.omp` 상태와 artifact를 읽는 bridge surface
+- `benchmark/`, `benchmarks/`: deterministic compatibility smoke
+- `missions/`: mission/sandbox parity 계획 surface
+- `.github/workflows/`, `.github/instructions/`, `.github/prompts/`, `.vscode/tasks.json`
+- `README.md`, `BRIEF.md`, `CONTEXT.md`, 관련 ADR
+- `.omp/plans/source-overall-cleanup/*.md`: OMC `.omx` cleanup plan의 방식과 섹션을 OMP `.omp` 기준으로 번역한 공유 계획
+
+기본 전수검사 명령은 다음을 포함합니다.
+
+```bash
+python -m cli source-parity --json
+python -m cli doctor --strict
+python -m cli skills
+python -m cli agents
+python -m pytest tests/unit/skills/test_markdown_skill_bodies.py tests/unit/skills/test_markdown_commands.py tests/unit/test_omc_structure_parity.py -q
+python -m pytest -q
+```
+
+검증이 실패하면 같은 slice를 수정하고 같은 검증을 다시 실행합니다. 실패 원인을 해결하지 못한 상태에서 다음 surface로 넘어가거나 완료를 선언하지 않습니다.
+
 ## 스킬 목록 (35개)
 
 ### 핵심 워크플로우

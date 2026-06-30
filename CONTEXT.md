@@ -16,6 +16,9 @@
 - Thin CLI adapter: 도메인 규칙을 직접 갖지 않고 스킬 API를 호출해 출력과 종료코드만 담당하는 CLI 계층.
 - Deep module: public interface는 작고 명확하지만 내부 구현이 충분한 책임을 감추는 모듈.
 - Validation gate: 계획, 연구, QA 같은 흐름에서 다음 단계로 넘어가기 전에 충족해야 하는 검증 조건.
+- Full-surface audit: OMC parity 작업에서 `src/`, `skills/`, `commands/`, `agents/`, hooks/templates, bridge, benchmarks, missions, GitHub/VS Code 설정, 핵심 문서를 모두 확인해 구현 상태와 gap을 분류하는 전수검사.
+- Audit manifest: autopilot이 짧게 종료되지 않도록 실행해야 하는 표면 목록과 검증 명령 묶음.
+- Implementation-method parity: OMC와 같은 파일명이나 명령명이 아니라, 해당 파일/명령이 쓰는 구조, 상태 의미, ownership, stop rule, 검증 절차까지 비교해 동등하거나 의도적으로 번역됐음을 증명한 상태.
 
 ## Architecture Model
 
@@ -73,6 +76,11 @@ Parity 항목은 다음 질문에 답해야 합니다.
 - Copilot 환경에서 동일한 사용자 가치를 제공하려면 이름, UX, 런타임 경계가 어떻게 달라져야 하는가?
 - 구현 완료를 어떤 테스트, smoke check, 문서 링크, 또는 에이전트 검토 결과로 증명하는가?
 - 남은 차이가 의도된 Copilot 적응인지, 아직 닫지 않은 parity gap인지 구분했는가?
+
+Autopilot 기반 parity 작업은 `source-parity`와 full-surface audit를 기본 검증 축으로 사용합니다.
+`python -m cli source-parity --json`은 OMC `src/` family와 현재 OMP source surface의 구현/적응/부분/gap 상태를 확인합니다.
+Markdown surface는 `skills/`, `commands/`, `agents/` 구조 테스트로 확인하고, runtime surface는 strict doctor와 CLI smoke로 확인합니다.
+`.omp/plans/source-overall-cleanup` 같은 계획 파일도 implementation-method parity 대상입니다. OMC `.omx` 파일과 이름만 맞추지 말고 섹션 구조와 cleanup lane 방식까지 OMP 용어로 번역해야 합니다.
 
 ## Current Assumptions
 

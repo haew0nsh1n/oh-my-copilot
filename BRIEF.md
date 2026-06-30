@@ -46,6 +46,18 @@ $ omp ultraqa "결제 모듈 QA"
 - 테스트는 도메인 불변식, 스킬 워크플로우, CLI 라우팅을 분리해서 검증해야 합니다.
 - 아키텍처 결정은 `docs/adr/`에 남기고, 공유 언어는 `CONTEXT.md`에 유지해야 합니다.
 
+## Autopilot Completion Policy
+
+`autopilot`은 짧은 데모 실행이 아니라 OMC parity gap을 끝까지 닫는 완료 루프입니다. 사용자가 기능 구현,
+parity 점검, 전수검사, “성공할 때까지 반복”을 요청하면 다음을 완료 조건으로 삼습니다.
+
+- 요청 범위의 모든 public surface가 구현, 적응, 부분 구현, 또는 gap으로 분류됩니다.
+- `source-parity`, strict doctor, 관련 markdown 구조 테스트, CLI smoke, 전체 pytest 중 필요한 검증이 실행됩니다.
+- 실패한 검증은 같은 slice에서 수정 후 같은 검증을 다시 실행합니다.
+- 단일 테스트 통과, 단일 smoke 성공, 문서 작성만으로 완료를 선언하지 않습니다.
+- OMC와 같은 이름의 파일을 추가했더라도 구현 방식, 섹션 구조, 상태 의미, 검증 절차가 비교되지 않았다면 완료로 보지 않습니다.
+- 범위 밖이거나 외부 권한/자격증명 때문에 막힌 항목은 blocker와 다음 행동을 남깁니다.
+
 ## Non-Goals
 
 - 실제 AI 모델 호출 런타임을 구현하는 것
@@ -72,3 +84,4 @@ $ omp ultraqa "결제 모듈 QA"
 - 도메인 용어가 `CONTEXT.md`, 코드, 테스트에서 같은 의미로 쓰입니다.
 - 계층 경계를 바꾸는 결정은 ADR로 기록됩니다.
 - `pytest` 또는 변경 범위에 맞는 좁은 테스트가 통과합니다.
+- autopilot/parity 작업은 Full-Surface Audit Manifest 또는 그 요청 범위에 해당하는 부분집합이 통과합니다.
