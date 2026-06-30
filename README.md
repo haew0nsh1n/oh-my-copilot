@@ -2,6 +2,20 @@
 
 Agent-driven engineering skills for Python using Matt Pocock's harness engineering patterns.
 
+`oh-my-copilot` is engineered as a GitHub Copilot-friendly parity harness for
+[`oh-my-claudecode`](https://github.com/Yeachan-Heo/oh-my-claudecode). The goal is to
+provide the same engineering capability in an OMP/Python environment: Matt Pocock-style
+skills drive requirements, TDD, architecture, debugging, review, and verification while the
+repo translates OMC's Claude Code-specific CLI, agent, hook, markdown, and runtime surfaces
+into Copilot-native Python APIs, `omp` commands, `.omp` state, prompts, tasks, and tests.
+
+This repository is not just a collection of stubs. It is set up as a harness engineering
+workspace: every public surface should be implemented, adapted, explicitly partial, or marked
+as a gap with evidence. The full audit loop checks `src/`, root `skills/`, `commands/`,
+`agents/`, hooks/templates, bridge scripts, benchmarks, missions, GitHub/VS Code workflow
+files, and shared `.omp/plans` against OMC behavior and implementation method, not only file
+names.
+
 ## Quick Start
 
 ```bash
@@ -20,6 +34,129 @@ pytest
 # Run with coverage
 pytest --cov
 ```
+
+## What This Harness Tests
+
+Use this repo when you want to verify that OMP is still aligned with OMC-style engineering
+workflows. The important surfaces are:
+
+- `src/`: Python domain models, product skill APIs, CLI adapters, and runtime helpers.
+- `skills/`: OMC-style root `SKILL.md` bodies with substantial operating instructions.
+- `commands/`: lightweight command wrappers that dispatch to matching skill bodies.
+- `agents/`: role prompts for OMC-compatible specialist agents.
+- `hooks/` and `templates/hooks/`: lifecycle hook surfaces translated for OMP.
+- `bridge/`: local `.omp` state and artifact inspection.
+- `benchmark/`, `benchmarks/`, `missions/`: deterministic compatibility and planning surfaces.
+- `.github/`, `.vscode/tasks.json`, `AGENTS.md`, `BRIEF.md`, `CONTEXT.md`: Copilot-native harness guidance.
+- `.omp/plans/source-overall-cleanup/`: shared cleanup plans that mirror OMC method and lane structure under `.omp` naming.
+
+For parity work, matching a filename is not enough. The implementation method should also be
+checked: section shape, command behavior, state path meaning, ownership/lane model, stop rules,
+verification commands, and generated-artifact policy.
+
+## Testing Guide
+
+### 1. Environment readiness
+
+Run this first when opening the repo or before a larger parity task:
+
+```bash
+git remote -v
+command -v uv || true
+command -v omp || true
+.venv/bin/python -m cli doctor
+.venv/bin/python -m cli bridge status --json
+```
+
+If `omp` is not installed yet, use the module fallback shown in the rest of this guide:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m cli <command>
+```
+
+### 2. Full OMC parity audit
+
+This is the default “is the harness still healthy?” check:
+
+```bash
+.venv/bin/python -m cli source-parity --json
+.venv/bin/python -m cli doctor --strict
+.venv/bin/python -m cli skills
+.venv/bin/python -m cli agents
+.venv/bin/python -m pytest tests/unit/skills/test_markdown_skill_bodies.py tests/unit/skills/test_markdown_commands.py tests/unit/test_omc_structure_parity.py tests/unit/test_copilot_native_workflow.py -q
+.venv/bin/python -m pytest -q
+```
+
+Expected high-level result today:
+
+- `source-parity`: `total_reference_files` is `523`, `families` is `29`, and `missing_omp_source_paths` is `{}`.
+- `doctor --strict`: `Summary: operational`, `placeholders: 0`, `external blocked: 0`.
+- Focused markdown/structure workflow tests pass.
+- Full pytest passes.
+
+### 3. Fast checks while editing
+
+Use the narrowest relevant check immediately after your first substantive edit:
+
+```bash
+# Python skill or domain behavior
+.venv/bin/python -m pytest tests/unit/skills/test_<skill_name>.py -q
+
+# CLI routing or command output
+.venv/bin/python -m pytest tests/unit/cli/test_cli.py -q
+
+# Root skill/command markdown surfaces
+.venv/bin/python -m pytest tests/unit/skills/test_markdown_skill_bodies.py tests/unit/skills/test_markdown_commands.py -q
+
+# Agents, hooks, workflows, missions, cleanup plans
+.venv/bin/python -m pytest tests/unit/test_omc_structure_parity.py -q
+
+# Autopilot prompts, VS Code tasks, full-audit guidance
+.venv/bin/python -m pytest tests/unit/test_copilot_native_workflow.py -q
+```
+
+After a narrow check passes, run `doctor --strict` and then full pytest when public surfaces changed.
+
+### 4. VS Code task shortcuts
+
+The shared [.vscode/tasks.json](.vscode/tasks.json) file exposes repeatable validation tasks:
+
+- `omp: source parity`
+- `omp: doctor strict`
+- `omp: pytest`
+- `omp: bridge status`
+- `omp: hud`
+- `omp: ultragoal status`
+- `omp: e2e runtime parity`
+
+Use these from VS Code when you want Copilot or a human reviewer to run the same checks without
+remembering each shell command.
+
+### 5. Autopilot/full-audit prompt
+
+For agent-driven verification, use the workspace prompt:
+
+```text
+/omc-full-audit
+현재 repo를 OMC parity 기준으로 전수검사하고, 실패하거나 partial/gap인 surface를 Matt Pocock skill로 TDD/diagnose/review 루프를 돌려 수정해줘. 단일 테스트 통과로 멈추지 말고 source-parity, strict doctor, markdown structure tests, CLI smoke, full pytest가 통과할 때까지 반복해줘.
+```
+
+The prompt tells Copilot to read `AGENTS.md`, `BRIEF.md`, `CONTEXT.md`, the Matt Pocock harness
+instructions, and the local `.agents/skills/` workflow skills before editing. It should stop only
+when the requested surfaces have evidence or a real blocker is documented.
+
+### 6. Cleanup after tests
+
+Pytest can recreate Python caches under `src/`. They are generated artifacts and should not be
+committed:
+
+```bash
+find src -type d -name '__pycache__' -prune -exec rm -rf {} +
+rm -rf src/oh_my_copilot.egg-info
+find src \( -type d -name '__pycache__' -o -type d -name '*.egg-info' -o -type f -name '*.pyc' \) -print
+```
+
+The final `find` command should print nothing.
 
 ## 🚀 Usage
 
